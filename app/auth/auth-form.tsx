@@ -22,7 +22,13 @@ type Mode = "sign-in" | "sign-up";
 
 const COPY: Record<
   Mode,
-  { title: string; subtitle: string; submit: string; switchPrompt: string; switchAction: string }
+  {
+    title: string;
+    subtitle: string;
+    submit: string;
+    switchPrompt: string;
+    switchAction: string;
+  }
 > = {
   "sign-in": {
     title: "Welcome back",
@@ -109,7 +115,7 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
       {/* Left: product intro */}
-      <aside className="relative hidden overflow-hidden bg-zinc-950 text-zinc-50 lg:flex lg:flex-col lg:justify-between lg:p-12">
+      <aside className="relative hidden overflow-hidden bg-muted/10 border-r text-zinc-50 lg:flex lg:flex-col lg:justify-between lg:p-12">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-60"
@@ -132,14 +138,14 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
 
         <div className="relative flex items-center gap-2.5">
           <Image src={Logo} alt="" width={32} height={32} className="size-8" />
-          <span className="text-lg font-semibold tracking-tight">
+          <span className="text-lg font-semibold text-foreground tracking-tight">
             Live Voice
           </span>
         </div>
 
         <div className="relative max-w-lg space-y-10">
           <div className="space-y-4">
-            <h2 className="text-4xl font-semibold leading-tight tracking-tight text-balance">
+            <h2 className="text-5xl font-semibold text-foreground leading-[50px] tracking-tight text-balance">
               Voice AI infrastructure your team can trust.
             </h2>
             <p className="text-base leading-relaxed text-zinc-400">
@@ -151,19 +157,19 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
           <ul className="space-y-6">
             {FEATURES.map(({ icon: Icon, title, body }) => (
               <li key={title} className="flex gap-4">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                <span className="flex bg-primary/10 size-10 shrink-0 items-center justify-center rounded-lg border border-white/10">
                   <Icon className="size-5 text-primary" />
                 </span>
                 <div>
-                  <p className="text-sm font-medium">{title}</p>
-                  <p className="mt-0.5 text-sm text-zinc-400">{body}</p>
+                  <p className="text-sm text-foreground font-medium">{title}</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">{body}</p>
                 </div>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="relative flex items-center gap-2 text-xs text-zinc-500">
+        <div className="relative flex items-center gap-2 text-xs text-foreground">
           <Lock className="size-3.5" />
           <span>Encrypted in transit and at rest</span>
           <span aria-hidden>·</span>
@@ -175,7 +181,13 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
       <main className="flex items-center justify-center bg-background px-6 py-12 sm:px-10">
         <div className="w-full max-w-sm">
           <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <Image src={Logo} alt="" width={28} height={28} className="size-7" />
+            <Image
+              src={Logo}
+              alt=""
+              width={28}
+              height={28}
+              className="size-7"
+            />
             <span className="text-lg font-semibold tracking-tight">
               Live Voice
             </span>
@@ -256,7 +268,9 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder={isSignIn ? "Enter your password" : "At least 8 characters"}
+                  placeholder={
+                    isSignIn ? "Enter your password" : "At least 8 characters"
+                  }
                   required
                   minLength={8}
                   autoComplete={isSignIn ? "current-password" : "new-password"}
