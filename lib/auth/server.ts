@@ -1,6 +1,11 @@
-import { createNeonAuth } from "@neon/auth/next/server";
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { nextCookies } from "better-auth/next-js";
+import { organization } from "better-auth/plugins";
+import { prisma } from "@/lib/db/prisma";
 
-export const auth = createNeonAuth({
-  baseUrl: process.env.NEON_AUTH_BASE_URL!,
-  cookies: { secret: process.env.NEON_AUTH_COOKIE_SECRET! },
+export const auth = betterAuth({
+  database: prismaAdapter(prisma, { provider: "postgresql" }),
+  emailAndPassword: { enabled: true },
+  plugins: [organization(), nextCookies()],
 });
