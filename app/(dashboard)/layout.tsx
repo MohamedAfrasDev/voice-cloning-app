@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth/server";
 import { OrgSwitcher } from "@/app/auth/org-switcher";
 import { SignOutButton } from "@/app/auth/sign-out-button";
+import { SidebarUser } from "@/components/layout/sidebar-user";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import {
   SidebarInset,
@@ -34,14 +35,14 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-14 items-center justify-between gap-4 border-b px-4">
-          <SidebarTrigger />
+      <AppSidebar
+        footer={
           <Suspense>
-            <UserMenu />
+            <SidebarUser />
           </Suspense>
-        </header>
+        }
+      />
+      <SidebarInset>
         <div className="flex flex-1 flex-col p-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>
