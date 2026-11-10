@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { quickActions } from "@/app/(dashboard)/features/dashboard/data/quick-action";
 
 const ACTIONS = [
   {
@@ -58,7 +59,7 @@ export function QuickActions() {
     <section className="space-y-4">
       <h2 className="text-xl font-semibold tracking-tight">Quick actions</h2>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {ACTIONS.map(({ id, title, description, gradient }) => (
+        {quickActions.map(({ title, description, gradient, href }) => (
           <div
             key={title}
             className="flex gap-4 rounded-2xl border bg-card p-4 shadow-xs"
@@ -78,11 +79,7 @@ export function QuickActions() {
                 size="sm"
                 className="w-fit"
                 nativeButton={false}
-                render={
-                  <Link
-                    href={`/text-to-speech?text=${encodeURIComponent(title)}?voiceId=${id}`}
-                  />
-                }
+                render={<Link href={href} />}
               >
                 Try now
                 <ArrowRight />
