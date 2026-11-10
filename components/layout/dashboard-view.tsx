@@ -21,6 +21,7 @@ const DashboardView = ({ name }: { name: string }) => {
           <Button
             variant="outline"
             size="sm"
+            nativeButton={false}
             render={<Link href="mailto:contact@afras.dev" />}
           >
             <ThumbsUp />
@@ -29,6 +30,7 @@ const DashboardView = ({ name }: { name: string }) => {
           <Button
             variant="outline"
             size="sm"
+            nativeButton={false}
             render={<Link href="mailto:contact@afras.dev" />}
           >
             <Headphones />

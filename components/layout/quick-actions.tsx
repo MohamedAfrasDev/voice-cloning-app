@@ -59,6 +59,7 @@ export function QuickActions() {
                 variant="outline"
                 size="sm"
                 className="w-fit"
+                nativeButton={false}
                 render={<Link href="/text-to-speech" />}
               >
                 Try now
