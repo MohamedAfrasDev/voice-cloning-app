@@ -7,6 +7,7 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    seed: "tsx scripts/seed-system-voices.ts",
   },
   datasource: {
     // Migrations need a direct (non-pooled) connection.
