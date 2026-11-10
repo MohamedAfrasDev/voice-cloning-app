@@ -5,8 +5,8 @@ import React from "react";
 
 const HealthCheck = () => {
   const trpc = useTRPC();
-  const { data } = useSuspenseQuery(trpc.health.queryOptions());
-  return <div>{data.status}</div>;
+  // const { data } = useSuspenseQuery(trpc.voices.queryOptions());
+  return <div>aa</div>;
 };
 
 export default HealthCheck;

@@ -4,31 +4,42 @@ import { Button } from "@/components/ui/button";
 
 const ACTIONS = [
   {
+    id: crypto.randomUUID(),
     title: "Narrate a Story",
     description: "Bring characters to life with expressive AI narration",
     gradient: "from-cyan-400 to-sky-200",
   },
   {
+    id: crypto.randomUUID(),
+
     title: "Record an Ad",
     description: "Create professional advertisements with lifelike AI voices",
     gradient: "from-pink-400 to-pink-200",
   },
   {
+    id: crypto.randomUUID(),
+
     title: "Direct a Movie Scene",
     description: "Generate dramatic dialogue for film and video",
     gradient: "from-violet-500 to-violet-200",
   },
   {
+    id: crypto.randomUUID(),
+
     title: "Voice a Game Character",
     description: "Build immersive worlds with dynamic character voices",
     gradient: "from-orange-400 to-orange-200",
   },
   {
+    id: crypto.randomUUID(),
+
     title: "Introduce Your Podcast",
     description: "Hook your listeners from the very first second",
     gradient: "from-blue-500 to-blue-200",
   },
   {
+    id: crypto.randomUUID(),
+
     title: "Guide a Meditation",
     description: "Craft soothing, calming audio for wellness content",
     gradient: "from-lime-400 to-lime-200",
@@ -36,11 +47,18 @@ const ACTIONS = [
 ];
 
 export function QuickActions() {
+  // const handleGenerate = () => {
+  //   const trimmed = text.trim();
+
+  //   if (!trimmed) return;
+  //   router.push(`/text-to-speech?text=${encodeURIComponent(trimmed)}`);
+  // };
+
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold tracking-tight">Quick actions</h2>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {ACTIONS.map(({ title, description, gradient }) => (
+        {ACTIONS.map(({ id, title, description, gradient }) => (
           <div
             key={title}
             className="flex gap-4 rounded-2xl border bg-card p-4 shadow-xs"
@@ -60,7 +78,11 @@ export function QuickActions() {
                 size="sm"
                 className="w-fit"
                 nativeButton={false}
-                render={<Link href="/text-to-speech" />}
+                render={
+                  <Link
+                    href={`/text-to-speech?text=${encodeURIComponent(title)}?voiceId=${id}`}
+                  />
+                }
               >
                 Try now
                 <ArrowRight />
