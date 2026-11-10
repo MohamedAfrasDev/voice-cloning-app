@@ -64,6 +64,12 @@ const TextInputPanel = () => {
                   &nbsp; /&nbsp;{5000} characters
                 </span>
               </p>
+              <GenerateButton
+                size="sm"
+                disabled={isSubmitting}
+                isSubmitting={isSubmitting}
+                onSubmit={() => form.handleSubmit()}
+              />
             </div>
           </div>
         ) : (
