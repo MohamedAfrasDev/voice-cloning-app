@@ -8,7 +8,7 @@ import HeroPattern from "./hero-pattern";
 
 const DashboardView = ({ name }: { name: string }) => {
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 p-5">
       <header className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
           <SidebarTrigger className="mt-1 md:hidden" />
