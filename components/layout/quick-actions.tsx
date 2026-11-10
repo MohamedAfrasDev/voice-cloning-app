@@ -72,7 +72,7 @@ export function QuickActions() {
             <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
               <div className="space-y-1">
                 <h3 className="font-medium leading-snug">{title}</h3>
-                <p className="text-sm text-muted-foreground">{description}</p>
+                <p className="text-sm text-muted-foreground">{description} </p>
               </div>
               <Button
                 variant="outline"
