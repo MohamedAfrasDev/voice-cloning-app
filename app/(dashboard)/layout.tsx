@@ -42,9 +42,11 @@ export default function DashboardLayout({
           </Suspense>
         }
       />
-      <SidebarInset>
-        <div className="flex flex-1 flex-col">{children}</div>
-      </SidebarInset>
+      <Suspense fallback={<span>Loading...</span>}>
+        <SidebarInset>
+          <div className="flex flex-1 flex-col">{children}</div>
+        </SidebarInset>
+      </Suspense>
     </SidebarProvider>
   );
 }
