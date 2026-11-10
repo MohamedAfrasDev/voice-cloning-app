@@ -1,7 +1,12 @@
+import { Metadata } from "next";
+import TextToSpeechLayout from "./components/text-to-speech-layout";
+import TextToSpeechView from "./components/text-to-speech-view";
+
+export const metadata: Metadata = { title: "Text to Speech" };
 export default function TexttoSpeechPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Text to Speech</h1>
-    </div>
+    <TextToSpeechLayout>
+      <TextToSpeechView />
+    </TextToSpeechLayout>
   );
 }

@@ -43,7 +43,7 @@ export default function DashboardLayout({
         }
       />
       <SidebarInset>
-        <div className="flex flex-1 flex-col p-6">{children}</div>
+        <div className="flex flex-1 flex-col">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

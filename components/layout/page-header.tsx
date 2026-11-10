@@ -15,7 +15,7 @@ const PageHeader = ({
   return (
     <div
       className={cn(
-        "flex items-center justify-between border-b px-4 py-4",
+        "sticky top-0 z-20 flex items-center justify-between border-b bg-background/80 px-4 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60",
         className,
       )}
     >
@@ -25,11 +25,14 @@ const PageHeader = ({
         <h1 className="text-lg font-semibold tracking-tight">{title} </h1>
       </div>
       <div className="flex items-center gap-3">
-        <Button variant={"outline"} size={"sm"}>
-          <Link href={"mailto:contact@afras.dev"}>
-            <ThumbsUpIcon />
-            <span className="hidden lg:block">Feedback</span>
-          </Link>
+        <Button
+          variant={"outline"}
+          size={"sm"}
+          nativeButton={false}
+          render={<Link href={"mailto:contact@afras.dev"} />}
+        >
+          <ThumbsUpIcon />
+          <span className="hidden lg:block">Feedback</span>
         </Button>
       </div>
     </div>
