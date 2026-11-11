@@ -35,13 +35,15 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <AppSidebar
-        footer={
-          <Suspense>
-            <SidebarUser />
-          </Suspense>
-        }
-      />
+      <Suspense fallback={<span>Loading...</span>}>
+        <AppSidebar
+          footer={
+            <Suspense>
+              <SidebarUser />
+            </Suspense>
+          }
+        />
+      </Suspense>
       <Suspense fallback={<span>Loading...</span>}>
         <SidebarInset>
           <div className="flex flex-1 flex-col">{children}</div>
