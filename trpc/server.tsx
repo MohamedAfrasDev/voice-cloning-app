@@ -6,6 +6,7 @@ import {
 } from "@trpc/tanstack-react-query";
 import { createTRPCClient, httpLink } from "@trpc/client";
 import { cache } from "react";
+import { connection } from "next/server";
 import { createTRPCContext } from "./init";
 import { makeQueryClient } from "./query-client";
 import { AppRouter, appRouter } from "./routers/_apps";
@@ -29,7 +30,9 @@ export const trpc = createTRPCOptionsProxy({
 //   queryClient: getQueryClient,
 // });
 
-export function HydrateClient(props: { children: React.ReactNode }) {
+export async function HydrateClient(props: { children: React.ReactNode }) {
+  // dehydrate() calls Date.now(); opt into request-time rendering first.
+  await connection();
   const queryClient = getQueryClient();
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

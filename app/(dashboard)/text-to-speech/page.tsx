@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import TextToSpeechLayout from "./components/text-to-speech-layout";
 import TextToSpeechView from "./components/text-to-speech-view";
@@ -12,10 +13,12 @@ export default async function TexttoSpeechPage({
   const { text, voiceId } = await searchParams;
   prefetch(trpc.voices.getAll.queryOptions());
   return (
-    <HydrateClient>
-      <TextToSpeechLayout>
-        <TextToSpeechView initialValues={{ text, voiceId }} />
-      </TextToSpeechLayout>
-    </HydrateClient>
+    <Suspense>
+      <HydrateClient>
+        <TextToSpeechLayout>
+          <TextToSpeechView initialValues={{ text, voiceId }} />
+        </TextToSpeechLayout>
+      </HydrateClient>
+    </Suspense>
   );
 }
