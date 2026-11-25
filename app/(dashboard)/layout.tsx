@@ -6,6 +6,7 @@ import { SidebarUser } from "@/components/layout/sidebar-user";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 // Every dashboard page needs an active workspace; new users go to onboarding.
 async function RequireOrganization({
@@ -26,7 +27,13 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <Suspense fallback={<span>Loading...</span>}>
+      <Suspense
+        fallback={
+          <div className="flex flex-col items-center justify-center w-screen h-screen">
+            <Spinner />
+          </div>
+        }
+      >
         <AppSidebar
           footer={
             <Suspense>
@@ -35,11 +42,10 @@ export default function DashboardLayout({
           }
         />
       </Suspense>
-      <Suspense fallback={<span>Loading...</span>}>
+      <Suspense fallback={<Spinner />}>
         <SidebarInset>
           <RequireOrganization>
             <div className="flex flex-1 flex-col">{children}</div>
-            <Toaster />
           </RequireOrganization>
         </SidebarInset>
       </Suspense>

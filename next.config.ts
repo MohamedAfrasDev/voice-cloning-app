@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   experimental: {
     agentFeedback: true,
+    proxyClientMaxBodySize: "20mb",
   },
   images: {
     remotePatterns: [
