@@ -22,6 +22,7 @@
     "@neon/env": "^2.1.0",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
+    "@sentry/nextjs": "^11.17.0",
     "@t3-oss/env-nextjs": "^0.13.11",
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-query": "^5.107.1",

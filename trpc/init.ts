@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth/server";
+import * as Sentry from "@sentry/nextjs";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { headers } from "next/headers";
 import { cache } from "react";
@@ -33,6 +34,8 @@ export const authProcedure = t.procedure.use(async ({ next }) => {
   if (!session) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
+
+  Sentry.setUser({ id: session.user.id });
 
   return next({
     ctx: {

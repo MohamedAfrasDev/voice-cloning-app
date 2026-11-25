@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/db/prisma";
 import { createTRPCRouter, orgProcedure } from "../init";
 import { z } from "zod";
@@ -139,7 +140,11 @@ export const generationsRouter = createTRPCRouter({
             r2ObjectKey,
           },
         });
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err, {
+          tags: { area: "generation-storage" },
+          extra: { generationId },
+        });
         if (generationId) {
           await prisma.generation
             .delete({

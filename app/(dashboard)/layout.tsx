@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth/server";
 import { SidebarUser } from "@/components/layout/sidebar-user";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "sonner";
 
 // Every dashboard page needs an active workspace; new users go to onboarding.
 async function RequireOrganization({
@@ -38,6 +39,7 @@ export default function DashboardLayout({
         <SidebarInset>
           <RequireOrganization>
             <div className="flex flex-1 flex-col">{children}</div>
+            <Toaster />
           </RequireOrganization>
         </SidebarInset>
       </Suspense>
