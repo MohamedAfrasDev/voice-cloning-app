@@ -39,15 +39,30 @@ interface VoiceCardProps {
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 
 function parseLanguage(locale: string) {
-  const [, country] = locale.split("-");
+  // Stored values may be any BCP 47 tag (e.g. "zh-Hans-CN"), so extract the
+  // region subtag properly and never let a malformed value throw at render.
+  let country: string | undefined;
+  try {
+    country = new Intl.Locale(locale).region;
+  } catch {
+    return { flag: "", region: locale };
+  }
 
   if (!country) return { flag: "", region: locale };
 
-  const flag = [...country.toUpperCase()]
-    .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
-    .join("");
+  // Flags only exist for 2-letter regions (UN M.49 codes like "419" have none).
+  const flag = /^[A-Z]{2}$/.test(country)
+    ? [...country]
+        .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
+        .join("")
+    : "";
 
-  const region = regionNames.of(country) ?? country;
+  let region = country;
+  try {
+    region = regionNames.of(country) ?? country;
+  } catch {
+    // Unknown region code: fall back to showing it as-is.
+  }
 
   return { flag, region };
 }
