@@ -132,6 +132,13 @@ export function VoiceCard({ voice }: VoiceCardProps) {
           className={"rounded-full"}
           onClick={togglePlay}
           disabled={isLoading}
+          aria-label={
+            isLoading
+              ? "Loading voice preview"
+              : isPlaying
+                ? "Pause voice preview"
+                : "Play voice preview"
+          }
         >
           {isLoading ? (
             <Spinner className="size-4" />
@@ -149,6 +156,7 @@ export function VoiceCard({ voice }: VoiceCardProps) {
                 variant={"outline"}
                 size={"icon-sm"}
                 className={"rounded-full"}
+                aria-label="Voice actions"
               >
                 <MoreHorizontal className="size-4" />
               </Button>
