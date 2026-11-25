@@ -18,6 +18,9 @@ export function useAudioRecorder() {
   // Bumped on reset/unmount so an in-flight startRecording can tell it was
   // cancelled and must not acquire (or keep) the mic after being disposed.
   const startIdRef = useRef(0);
+  // True while a start is awaiting the mic prompt / recorder import, so a
+  // double click can't acquire a second stream and leak the first.
+  const isStartingRef = useRef(false);
 
   const destroyWaveSurfer = useCallback(() => {
     if (micStreamRef.current) {
@@ -55,6 +58,7 @@ export function useAudioRecorder() {
       // Counter, not a DOM node: we want the latest value on unmount.
       // eslint-disable-next-line react-hooks/exhaustive-deps
       startIdRef.current++;
+      isStartingRef.current = false;
       cleanup();
     };
   }, [cleanup]);
@@ -90,6 +94,9 @@ export function useAudioRecorder() {
   }, [isRecording, destroyWaveSurfer]);
 
   const startRecording = useCallback(async () => {
+    if (isStartingRef.current || recorderRef.current) return;
+
+    isStartingRef.current = true;
     const startId = ++startIdRef.current;
     const isCancelled = () => startIdRef.current !== startId;
 
@@ -145,6 +152,10 @@ export function useAudioRecorder() {
       } else {
         setError("Failed to access microphone. Please check your device.");
       }
+    } finally {
+      // A cancelled start already had its flag cleared (or handed to a newer
+      // start) by reset/unmount, so only the current start may clear it.
+      if (!isCancelled()) isStartingRef.current = false;
     }
   }, [cleanup]);
 
@@ -167,6 +178,7 @@ export function useAudioRecorder() {
 
   const resetRecording = useCallback(() => {
     startIdRef.current++;
+    isStartingRef.current = false;
     cleanup();
     setIsRecording(false);
     setElapsedTime(0);
