@@ -112,6 +112,7 @@ function FileDropzone({
           variant="ghost"
           size={"icon-sm"}
           onClick={togglePlay}
+          aria-label={isPlaying ? "Pause audio" : "Play audio"}
         >
           {isPlaying ? (
             <Pause className="size-4" />
@@ -125,6 +126,7 @@ function FileDropzone({
           variant={"ghost"}
           size="icon-sm"
           onClick={() => onFileChange(null)}
+          aria-label="Remove audio file"
         >
           <X className="size-4" />
         </Button>
