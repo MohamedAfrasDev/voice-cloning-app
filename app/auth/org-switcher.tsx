@@ -36,7 +36,7 @@ export function OrgSwitcher() {
             {org.id === active?.id ? " ✓" : ""}
           </DropdownMenuItem>
         ))}
-        <DropdownMenuItem render={<Link href="/org-selection" />}>
+        <DropdownMenuItem render={<Link href="/onboarding?new=1" />}>
           + Create organization
         </DropdownMenuItem>
       </DropdownMenuContent>

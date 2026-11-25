@@ -1,8 +1,20 @@
+import { Suspense } from "react";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
-import TexttoSpeechPage from "../page";
 import TextToSpeechDetailView from "../components/text-to-speech-detail-view";
 
-export default async function TextToSpeechDetailPage({
+export default function TextToSpeechDetailPage({
+  params,
+}: {
+  params: Promise<{ generationId: string }>;
+}) {
+  return (
+    <Suspense>
+      <DetailContent params={params} />
+    </Suspense>
+  );
+}
+
+async function DetailContent({
   params,
 }: {
   params: Promise<{ generationId: string }>;
@@ -11,6 +23,8 @@ export default async function TextToSpeechDetailPage({
 
   prefetch(trpc.generations.getById.queryOptions({ id: generationId }));
   prefetch(trpc.voices.getAll.queryOptions());
+
+  prefetch(trpc.generations.getAll.queryOptions());
 
   return (
     <HydrateClient>
