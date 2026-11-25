@@ -14,6 +14,9 @@ export function useAudioPlayback(src: string | File | null) {
         audioRef.current.removeAttribute("src");
         audioRef.current = null;
       }
+      // The next src starts from a clean slate, not the old src's state.
+      setIsPlaying(false);
+      setIsLoading(false);
     };
   }, [src]);
 
