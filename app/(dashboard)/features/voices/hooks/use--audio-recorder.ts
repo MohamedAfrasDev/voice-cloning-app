@@ -15,6 +15,9 @@ export function useAudioRecorder() {
   const containerRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WaveSurfer | null>(null);
   const micStreamRef = useRef<{ onDestroy: () => void } | null>(null);
+  // Bumped on reset/unmount so an in-flight startRecording can tell it was
+  // cancelled and must not acquire (or keep) the mic after being disposed.
+  const startIdRef = useRef(0);
 
   const destroyWaveSurfer = useCallback(() => {
     if (micStreamRef.current) {
@@ -45,6 +48,16 @@ export function useAudioRecorder() {
     }
     destroyWaveSurfer();
   }, [destroyWaveSurfer]);
+
+  // Release the timer, recorder and mic when the component unmounts.
+  useEffect(() => {
+    return () => {
+      // Counter, not a DOM node: we want the latest value on unmount.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      startIdRef.current++;
+      cleanup();
+    };
+  }, [cleanup]);
 
   useEffect(() => {
     if (!isRecording || !containerRef.current || !streamRef.current) return;
@@ -77,6 +90,9 @@ export function useAudioRecorder() {
   }, [isRecording, destroyWaveSurfer]);
 
   const startRecording = useCallback(async () => {
+    const startId = ++startIdRef.current;
+    const isCancelled = () => startIdRef.current !== startId;
+
     try {
       setError(null);
       setAudioBlob(null);
@@ -86,10 +102,21 @@ export function useAudioRecorder() {
         audio: true,
       });
 
+      if (isCancelled()) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
       streamRef.current = stream;
 
       const { default: RecordRTC, StereoAudioRecorder } =
         await import("recordrtc");
+
+      if (isCancelled()) {
+        stream.getTracks().forEach((track) => track.stop());
+        if (streamRef.current === stream) streamRef.current = null;
+        return;
+      }
 
       const recorder = new RecordRTC(stream, {
         recorderType: StereoAudioRecorder,
@@ -108,6 +135,9 @@ export function useAudioRecorder() {
         setElapsedTime((Date.now() - startTime) / 1000);
       }, 100);
     } catch (error) {
+      if (isCancelled()) return;
+      cleanup();
+
       if (error instanceof DOMException && error.name === "NotAllowedError") {
         setError(
           "Microphone access denied. Please allow microphone access in your browser settings.",
@@ -136,6 +166,7 @@ export function useAudioRecorder() {
   );
 
   const resetRecording = useCallback(() => {
+    startIdRef.current++;
     cleanup();
     setIsRecording(false);
     setElapsedTime(0);
