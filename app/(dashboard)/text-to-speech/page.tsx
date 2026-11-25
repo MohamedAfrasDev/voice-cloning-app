@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
+import Loading from "./loading";
 import TextToSpeechLayout from "./components/text-to-speech-layout";
 import TextToSpeechView from "./components/text-to-speech-view";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
@@ -13,7 +14,7 @@ export default function TexttoSpeechPage({
   searchParams: Promise<{ text?: string; voiceId?: string }>;
 }) {
   return (
-    <Suspense>
+    <Suspense fallback={<Loading />}>
       <TextToSpeechContent searchParams={searchParams} />
     </Suspense>
   );

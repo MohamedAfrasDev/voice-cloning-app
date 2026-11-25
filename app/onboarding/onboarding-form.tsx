@@ -59,17 +59,35 @@ export function OnboardingForm({
     try {
       const base = slugify(trimmed) || "workspace";
       // Try a clean slug first; fall back to a suffixed one if it's taken.
+      let slug = base;
       let result = await authClient.organization.create({
         name: trimmed,
-        slug: base,
+        slug,
       });
-      if (result.error) {
+      // Retry only for a confirmed slug collision, which Better Auth rejects
+      // before writing anything.
+      if (result.error?.code === "ORGANIZATION_ALREADY_EXISTS") {
+        slug = `${base}-${randomSuffix()}`;
         result = await authClient.organization.create({
           name: trimmed,
-          slug: `${base}-${randomSuffix()}`,
+          slug,
         });
       }
       if (result.error) {
+        // Creation isn't transactional (Prisma adapter without `transaction`),
+        // so a later step may have failed after the workspace was committed.
+        // Reuse it instead of creating a duplicate on the next attempt.
+        const existing = await authClient.organization.list();
+        const created = existing.data?.find((o) => o.slug === slug);
+        if (created) {
+          const active = await authClient.organization.setActive({
+            organizationId: created.id,
+          });
+          if (!active.error) {
+            enter();
+            return;
+          }
+        }
         setError(result.error.message ?? "Couldn't create the workspace.");
         return;
       }
@@ -84,15 +102,20 @@ export function OnboardingForm({
   async function onJoin(organizationId: string) {
     setError(undefined);
     setJoiningId(organizationId);
-    const { error } = await authClient.organization.setActive({
-      organizationId,
-    });
-    if (error) {
-      setError(error.message ?? "Couldn't open that workspace.");
+    try {
+      const { error } = await authClient.organization.setActive({
+        organizationId,
+      });
+      if (error) {
+        setError(error.message ?? "Couldn't open that workspace.");
+        setJoiningId(undefined);
+        return;
+      }
+      enter();
+    } catch {
+      setError("Couldn't open that workspace.");
       setJoiningId(undefined);
-      return;
     }
-    enter();
   }
 
   const busy = pending || !!joiningId;

@@ -80,6 +80,7 @@ const PromptSuggestion = ({
           <Badge
             key={suggestion.label}
             variant={"outline"}
+            render={<button type="button" />}
             className="cursor-pointer gap-1.5 py-1 px-2.5 text-xs hover:bg-accent rounded-md"
             onClick={() => onSelect(suggestion.prompt)}
           >

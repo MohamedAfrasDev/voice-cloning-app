@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
+import Loading from "../loading";
 import TextToSpeechDetailView from "../components/text-to-speech-detail-view";
 
 export default function TextToSpeechDetailPage({
@@ -8,7 +9,7 @@ export default function TextToSpeechDetailPage({
   params: Promise<{ generationId: string }>;
 }) {
   return (
-    <Suspense>
+    <Suspense fallback={<Loading />}>
       <DetailContent params={params} />
     </Suspense>
   );

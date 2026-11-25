@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 import { useRouter } from "next/navigation";
 import { useTRPC } from "@/trpc/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import error from "next/error";
 const ttsFormSchema = z.object({
   text: z.string().min(1, "Please enter some text"),
@@ -43,6 +43,7 @@ const TextToSpeechForm = ({
 }) => {
   const trpc = useTRPC();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const createMutation = useMutation(
     trpc.generations.create.mutationOptions({}),
   );
@@ -64,6 +65,9 @@ const TextToSpeechForm = ({
         });
 
         toast.success("Audio geenrated successfully!");
+        await queryClient.invalidateQueries(
+          trpc.generations.getAll.queryFilter(),
+        );
         router.push(`/text-to-speech/${data.id}`);
       } catch {
         const message =
