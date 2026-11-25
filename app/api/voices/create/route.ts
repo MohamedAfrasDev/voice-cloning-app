@@ -5,7 +5,8 @@ import { headers } from "next/headers";
 import z from "zod";
 import { parseBuffer } from "music-metadata";
 import { prisma } from "@/lib/db/prisma";
-import { uploadAudio } from "@/lib/r2";
+import { deleteAudio, uploadAudio } from "@/lib/r2";
+import * as Sentry from "@sentry/nextjs";
 const createVoiceSchema = z.object({
   name: z.string().min(1, "Voice name is required"),
   category: z.enum(VOICE_CATEGORIES as [VoiceCategory, ...VoiceCategory[]]),
@@ -105,6 +106,9 @@ export async function POST(request: Request) {
   }
 
   let createdVoiceId: string | null = null;
+  // Set just before the upload so the rollback can remove the object even if
+  // a later step (the DB update) fails.
+  let uploadedObjectKey: string | null = null;
 
   try {
     const voice = await prisma.voice.create({
@@ -124,6 +128,7 @@ export async function POST(request: Request) {
     createdVoiceId = voice.id;
 
     const r2ObjectKey = `voices/orgs/${orgId}/${voice.id}`;
+    uploadedObjectKey = r2ObjectKey;
 
     await uploadAudio({
       buffer: Buffer.from(fileBuffer),
@@ -139,7 +144,20 @@ export async function POST(request: Request) {
         r2ObjectKey,
       },
     });
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err, {
+      tags: { area: "voice-create" },
+      extra: { createdVoiceId },
+    });
+
+    if (uploadedObjectKey) {
+      await deleteAudio(uploadedObjectKey).catch((cleanupErr) =>
+        Sentry.captureException(cleanupErr, {
+          tags: { area: "voice-create-rollback-r2" },
+        }),
+      );
+    }
+
     if (createdVoiceId) {
       await prisma.voice
         .delete({
