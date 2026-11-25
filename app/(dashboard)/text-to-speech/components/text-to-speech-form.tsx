@@ -74,9 +74,13 @@ const TextToSpeechForm = ({
         const message =
           error instanceof Error ? error.message : "Failed to generate audio";
 
-        // Server faults are already reported by the tRPC route; this catches
-        // network/client-side failures.
-        if (!(error instanceof TRPCClientError)) {
+        // A TRPCClientError with a server error code came from a real server
+        // response: 500s are already reported by the tRPC route and other codes
+        // (NOT_FOUND, FORBIDDEN, ...) are expected. Without one the request
+        // never got a response (network failure etc.), so report it here.
+        const hasServerResponse =
+          error instanceof TRPCClientError && !!error.data?.code;
+        if (!hasServerResponse) {
           Sentry.captureException(error, { tags: { area: "tts-form" } });
         }
 
