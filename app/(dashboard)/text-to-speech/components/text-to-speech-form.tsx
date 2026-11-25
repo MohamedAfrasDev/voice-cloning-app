@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useTRPC } from "@/trpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import error from "next/error";
+import * as Sentry from "@sentry/nextjs";
+import { TRPCClientError } from "@trpc/client";
 const ttsFormSchema = z.object({
   text: z.string().min(1, "Please enter some text"),
   voiceId: z.string().min(1, "Please select a voice"),
@@ -69,9 +70,21 @@ const TextToSpeechForm = ({
           trpc.generations.getAll.queryFilter(),
         );
         router.push(`/text-to-speech/${data.id}`);
-      } catch {
+      } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to generate audio";
+
+        // A TRPCClientError with a server error code came from a real server
+        // response: 500s are already reported by the tRPC route and other codes
+        // (NOT_FOUND, FORBIDDEN, ...) are expected. Without one the request
+        // never got a response (network failure etc.), so report it here.
+        const hasServerResponse =
+          error instanceof TRPCClientError && !!error.data?.code;
+        if (!hasServerResponse) {
+          Sentry.captureException(error, { tags: { area: "tts-form" } });
+        }
+
+        toast.error(message);
       }
     },
   });

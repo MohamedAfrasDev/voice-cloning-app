@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/db/prisma";
 import { createTRPCRouter, orgProcedure } from "../init";
 import { z } from "zod";
@@ -72,7 +73,9 @@ export const voiceRouter = createTRPCRouter({
       if (voice.r2ObjectKey) {
         // Best-effort cleanup: the DB row is already gone.
         await deleteAudio(voice.r2ObjectKey).catch((err) =>
-          console.error("Failed to delete voice audio from R2:", err),
+          Sentry.captureException(err, {
+            tags: { area: "voice-delete-r2" },
+          }),
         );
       }
 

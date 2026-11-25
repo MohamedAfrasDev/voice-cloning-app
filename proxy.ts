@@ -1,7 +1,7 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_ROUTES = ["/sign-in", "/sign-up", "/api/auth"];
+const PUBLIC_ROUTES = ["/sign-in", "/sign-up", "/api/auth", "/monitoring"];
 
 // Optimistic check only (cookie presence). Real authorization happens
 // server-side via auth.api.getSession() in pages and route handlers.
