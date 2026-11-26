@@ -46,7 +46,7 @@ export function VoiceSelector() {
         disabled={isSubmitting}
       >
         <SelectTrigger
-          className={"w-full h-auto gap-1 rounded-lg bg-white px-2 py-1"}
+          className={"w-full h-auto gap-1 rounded-lg bg-card px-2 py-1"}
         >
           <SelectValue>
             {currentVoice && (

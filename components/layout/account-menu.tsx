@@ -6,10 +6,15 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useSignOut } from "@/hooks/use-sign-out";
+import { useTheme } from "@/hooks/use-theme";
+import { THEME_OPTIONS } from "@/components/theme/theme-options";
 
 function initials(name: string) {
   return name
@@ -31,6 +36,7 @@ export function AccountMenu({
 }) {
   const { signOut, isPending } = useSignOut();
   const { setOpenMobile } = useSidebar();
+  const { preference, setPreference } = useTheme();
 
   return (
     <DropdownMenu>
@@ -71,6 +77,20 @@ export function AccountMenu({
           <Settings />
           Settings
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuRadioGroup
+          aria-label="Theme"
+          value={preference}
+          onValueChange={setPreference}
+        >
+          {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
+            <DropdownMenuRadioItem key={value} value={value} className="h-9">
+              <Icon />
+              {label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+        <DropdownMenuSeparator />
         <DropdownMenuItem disabled={isPending} onClick={signOut}>
           <LogOut />
           {isPending ? "Signing out..." : "Sign out"}

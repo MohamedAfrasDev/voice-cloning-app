@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { QuickActions } from "./quick-actions";
 import { TextInputPanel } from "./text-input-panel";
-import HeroPattern from "./hero-pattern";
 
 const DashboardView = ({ name }: { name: string }) => {
   return (
@@ -40,7 +39,7 @@ const DashboardView = ({ name }: { name: string }) => {
       </header>
 
       <TextInputPanel />
-      {/* <HeroPattern /> */}
+
 
       <QuickActions />
     </div>

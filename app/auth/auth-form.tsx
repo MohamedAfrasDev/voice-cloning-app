@@ -115,13 +115,13 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
       {/* Left: product intro */}
-      <aside className="relative hidden overflow-hidden bg-muted/10 border-r text-zinc-50 lg:flex lg:flex-col lg:justify-between lg:p-12">
+      <aside className="relative hidden overflow-hidden bg-muted/10 border-r lg:flex lg:flex-col lg:justify-between lg:p-12">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-60"
           style={{
             backgroundImage:
-              "radial-gradient(60% 50% at 20% 0%, oklch(0.63 0.2 254 / 0.35), transparent 70%), radial-gradient(50% 40% at 100% 100%, oklch(0.63 0.2 254 / 0.2), transparent 70%)",
+              "radial-gradient(60% 50% at 20% 0%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 70%), radial-gradient(50% 40% at 100% 100%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 70%)",
           }}
         />
         <div
@@ -129,7 +129,7 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
           style={{
             backgroundImage:
-              "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+              "linear-gradient(to right, var(--foreground) 1px, transparent 1px), linear-gradient(to bottom, var(--foreground) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
             maskImage:
               "radial-gradient(ellipse at center, black 30%, transparent 75%)",
@@ -148,7 +148,7 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
             <h2 className="text-5xl font-semibold text-foreground leading-[50px] tracking-tight text-balance">
               Voice AI infrastructure your team can trust.
             </h2>
-            <p className="text-base leading-relaxed text-zinc-400">
+            <p className="text-base leading-relaxed text-muted-foreground">
               Clone, manage and generate lifelike speech from a single secure
               workspace — built for teams shipping voice at scale.
             </p>
@@ -157,7 +157,7 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
           <ul className="space-y-6">
             {FEATURES.map(({ icon: Icon, title, body }) => (
               <li key={title} className="flex gap-4">
-                <span className="flex bg-primary/10 size-10 shrink-0 items-center justify-center rounded-lg border border-white/10">
+                <span className="flex bg-primary/10 size-10 shrink-0 items-center justify-center rounded-lg border border-border">
                   <Icon className="size-5 text-primary" />
                 </span>
                 <div>

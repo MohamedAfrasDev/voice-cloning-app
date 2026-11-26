@@ -2,12 +2,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import RecordRTCType from "recordrtc";
 import WaveSurfer from "wavesurfer.js";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
+import { useTheme } from "@/hooks/use-theme";
+import { getWaveformColors } from "@/lib/waveform-colors";
 
 export function useAudioRecorder() {
   const [isRecording, setIsRecording] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { theme } = useTheme();
 
   const recorderRef = useRef<RecordRTCType | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -68,7 +71,7 @@ export function useAudioRecorder() {
 
     const ws = WaveSurfer.create({
       container: containerRef.current,
-      waveColor: "hsl(var(--foreground) / 0.5)",
+      ...getWaveformColors(),
       height: 144,
       barWidth: 1,
       barGap: 2,
@@ -92,6 +95,10 @@ export function useAudioRecorder() {
       destroyWaveSurfer();
     };
   }, [isRecording, destroyWaveSurfer]);
+
+  useEffect(() => {
+    wsRef.current?.setOptions(getWaveformColors());
+  }, [theme]);
 
   const startRecording = useCallback(async () => {
     if (isStartingRef.current || recorderRef.current) return;

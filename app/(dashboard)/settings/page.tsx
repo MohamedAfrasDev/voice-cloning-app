@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/server";
 import { SignOutButton } from "@/app/auth/sign-out-button";
+import { ThemePicker } from "@/components/theme/theme-picker";
 import PageHeader from "@/components/layout/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -12,7 +13,7 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" />
-      <div className="mx-auto w-full max-w-2xl p-4 lg:p-6">
+      <div className="mx-auto w-full max-w-2xl space-y-6 p-4 lg:p-6">
         <section
           aria-labelledby="account-heading"
           className="rounded-xl border bg-card"
@@ -29,6 +30,16 @@ export default function SettingsPage() {
           >
             <AccountDetails />
           </Suspense>
+        </section>
+
+        <section
+          aria-labelledby="appearance-heading"
+          className="rounded-xl border bg-card"
+        >
+          <h2 id="appearance-heading" className="border-b p-4 font-semibold">
+            Appearance
+          </h2>
+          <ThemePicker />
         </section>
       </div>
     </>
