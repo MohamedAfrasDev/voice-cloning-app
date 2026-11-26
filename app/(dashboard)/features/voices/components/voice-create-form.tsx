@@ -51,6 +51,12 @@ import {
 import { useAudioPlayback } from "@/hooks/use-audio-playback";
 import { formatFileSize } from "@/lib/utils";
 import { VoiceRecorder } from "./voice-recorder";
+import { postJson, uploadFile } from "../lib/upload-voice";
+import {
+  MAX_UPLOAD_SIZE_BYTES,
+  MAX_VOICE_DESCRIPTION_LENGTH,
+  MAX_VOICE_NAME_LENGTH,
+} from "@/lib/voice-upload";
 
 const LANGUAGE_OPTIONS = locales.all
   .filter((l) => l.tag && l.tag.includes("-") && l.name)
@@ -60,7 +66,7 @@ const LANGUAGE_OPTIONS = locales.all
   }));
 
 const voiceCreateFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().trim().min(1, "Name is required"),
   file: z
     .instanceof(File, { message: "An audio file is required" })
     .nullable()
@@ -84,7 +90,7 @@ function FileDropzone({
   const { getRootProps, getInputProps, isDragActive, isDragReject } =
     useDropzone({
       accept: { "audio/*": [] },
-      maxSize: 20 * 1024 * 1024,
+      maxSize: MAX_UPLOAD_SIZE_BYTES,
       multiple: false,
       onDrop: (acceptedFiles) => {
         if (acceptedFiles.length > 0) {
@@ -158,7 +164,7 @@ function FileDropzone({
         </p>
 
         <p className="text-center text-sm text-muted-foreground">
-          Supports all audio formats, max size 20MB
+          WAV, MP3, M4A, OGG, FLAC or WebM, max size 20MB
         </p>
       </div>
 
@@ -246,29 +252,15 @@ export function VoiceCreateForm({
       language: string;
       description?: string;
     }) => {
-      const params = new URLSearchParams({
+      const { uploadId } = await uploadFile(file);
+
+      return postJson("/api/voices/create", {
+        uploadId,
         name,
         category,
         language,
+        description,
       });
-
-      if (description) {
-        params.set("description", description);
-      }
-
-      const response = await fetch(`/api/voices/create?${params.toString()}`, {
-        method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-
-      if (!response.ok) {
-        const body = await response.json();
-
-        throw new Error(body.error ?? "Failed to create voice");
-      }
-
-      return response.json();
     },
   });
 
@@ -383,6 +375,7 @@ export function VoiceCreateForm({
                   <Input
                     id={field.name}
                     placeholder="Voice Label"
+                    maxLength={MAX_VOICE_NAME_LENGTH}
                     aria-invalid={isInvalid}
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
@@ -475,6 +468,7 @@ export function VoiceCreateForm({
                   <InputGroupTextarea
                     id={field.name}
                     placeholder="Describe this voice"
+                    maxLength={MAX_VOICE_DESCRIPTION_LENGTH}
                     aria-invalid={isInvalid}
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}

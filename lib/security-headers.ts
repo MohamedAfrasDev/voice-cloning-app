@@ -1,6 +1,8 @@
 type Options = {
   isDev: boolean;
   sentryDsn?: string;
+  /** Where the browser uploads files directly. */
+  uploadOrigin?: string;
 };
 
 function originOf(url: string | undefined) {
@@ -26,9 +28,10 @@ const ENFORCED_POLICY = [
  * an expected one. Pages are prerendered, so there are no per-request nonces;
  * see "Without Nonces" in the Next.js Content Security Policy guide.
  */
-function reportOnlyPolicy({ isDev, sentryDsn }: Options) {
+function reportOnlyPolicy({ isDev, sentryDsn, uploadOrigin }: Options) {
   // Sentry normally goes through the /monitoring tunnel on our own origin.
   const sentryOrigin = originOf(sentryDsn);
+  const connectOrigins = [sentryOrigin, originOf(uploadOrigin)];
 
   return [
     "default-src 'self'",
@@ -40,7 +43,7 @@ function reportOnlyPolicy({ isDev, sentryDsn }: Options) {
     "media-src 'self' blob:",
     // Session Replay and the audio recorder start workers from blobs.
     "worker-src 'self' blob:",
-    ["connect-src 'self' blob:", sentryOrigin].filter(Boolean).join(" "),
+    ["connect-src 'self' blob:", ...connectOrigins].filter(Boolean).join(" "),
     ENFORCED_POLICY,
   ].join("; ");
 }

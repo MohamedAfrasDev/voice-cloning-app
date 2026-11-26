@@ -7,7 +7,9 @@ import { TRPCError } from "@trpc/server";
 import { deleteAudio } from "@/lib/r2";
 export const voiceRouter = createTRPCRouter({
   getAll: orgProcedure
-    .input(z.object({ query: z.string().trim().optional() }).optional())
+    .input(
+      z.object({ query: z.string().trim().max(200).optional() }).optional(),
+    )
     .query(async ({ ctx, input }) => {
       const searchFilter = input?.query
         ? {
@@ -63,7 +65,7 @@ export const voiceRouter = createTRPCRouter({
     }),
 
   delete: orgAdminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.string().max(64) }))
     .mutation(async ({ ctx, input }) => {
       const voice = await prisma.voice.findFirst({
         where: { id: input.id, variant: "CUSTOM", orgId: ctx.orgId },

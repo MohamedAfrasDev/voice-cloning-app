@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     const headers = securityHeaders({
       isDev: process.env.NODE_ENV === "development",
       sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+      uploadOrigin: `https://${process.env.R2_BUCKET_NAME}.${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     });
 
     // The audio routes send their own, stricter Content-Security-Policy, which
@@ -29,7 +30,6 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     agentFeedback: true,
-    proxyClientMaxBodySize: "20mb",
   },
   images: {
     remotePatterns: [
