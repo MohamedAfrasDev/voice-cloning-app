@@ -5,7 +5,8 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { chatterbox } from "@/lib/chatterbox-client";
 import { uploadAudio } from "@/lib/r2";
-import { polar } from "@/lib/polar";
+import { recordUsage } from "@/lib/usage-events";
+import { after } from "next/server";
 export const generationsRouter = createTRPCRouter({
   getById: orgProcedure
     .input(z.object({ id: z.string() }))
@@ -169,18 +170,14 @@ export const generationsRouter = createTRPCRouter({
         });
       }
 
-      polar.events
-        .ingest({
-          events: [
-            {
-              name: "tts_generation",
-              external_customer_id: ctx.orgId,
-              metadata: { characters: input.text.length },
-              timestamp: new Date().toISOString(),
-            },
-          ],
-        })
-        .catch(() => {});
+      const usage = {
+        generationId,
+        orgId: ctx.orgId,
+        characters: input.text.length,
+        occurredAt: new Date(),
+      };
+      // Runs after the response, so a slow or failing Polar doesn't delay it.
+      after(() => recordUsage(usage));
 
       return {
         id: generationId,
