@@ -15,7 +15,7 @@ import { takeTtsDraft } from "@/lib/tts-draft";
 import { useSubscriptionRequiredToast } from "../../features/billing/hooks/use-subscription-required-toast";
 import { SUBSCRIPTION_REQUIRED } from "../../features/billing/lib/error-codes";
 const ttsFormSchema = z.object({
-  text: z.string().min(1, "Please enter some text"),
+  text: z.string().trim().min(1, "Please enter some text"),
   voiceId: z.string().min(1, "Please select a voice"),
   temperature: z.number(),
   topP: z.number(),
@@ -69,7 +69,7 @@ const TextToSpeechForm = ({
           repitionPenalty: value.repetitionPenalty,
         });
 
-        toast.success("Audio geenrated successfully!");
+        toast.success("Audio generated successfully!");
         await queryClient.invalidateQueries(
           trpc.generations.getAll.queryFilter(),
         );

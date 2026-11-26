@@ -12,7 +12,7 @@ function formatCurrency(cents: number): string {
   }).format(cents / 100);
 }
 
-function UpdgradeCard() {
+function UpgradeCard() {
   const { checkout, isPending: isCheckoutPending } = useCheckout();
 
   return (
@@ -39,7 +39,7 @@ function UpdgradeCard() {
             Redirecting
           </>
         ) : (
-          "Updgrade"
+          "Upgrade"
         )}
       </Button>
     </div>
@@ -145,7 +145,7 @@ export function UsageContainer() {
       return data.hasActiveSubscription ? (
         <UsageCard estimatedCostCents={data.estimatedCostCents} />
       ) : (
-        <UpdgradeCard />
+        <UpgradeCard />
       );
     }
 

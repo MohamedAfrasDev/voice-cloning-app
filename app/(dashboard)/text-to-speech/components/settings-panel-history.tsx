@@ -31,7 +31,7 @@ const SettingsPanelHistory = () => {
         </div>
 
         <p className="font-semibold tracking-tight text-foreground">
-          No generation yet
+          No generations yet
         </p>
         <p className="max-w-48 text-center text-xs text-muted-foreground">
           Generate some audio and it will appear here

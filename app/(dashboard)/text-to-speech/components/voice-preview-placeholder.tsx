@@ -1,5 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { AudioLines, BookOpen, Sparkles, Volume2 } from "lucide-react";
+import { AudioLines, Sparkles, Volume2 } from "lucide-react";
 import React from "react";
 
 const VoicePreviewPlaceholder = () => {
@@ -26,11 +25,6 @@ const VoicePreviewPlaceholder = () => {
           Once you generate, your audio result will appear here. Sit back and
           relax.
         </p>
-
-        <Button variant={"outline"} size={"sm"} className={"mt-4"}>
-          <BookOpen />
-          Don&apos;t know how?
-        </Button>
       </div>
     </div>
   );

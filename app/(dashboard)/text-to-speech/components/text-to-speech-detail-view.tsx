@@ -12,9 +12,12 @@ import { useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query";
 import { TTSVoicesProvider } from "../contexts/tts-voices-context";
 import { VoicePreviewPanel } from "./voice-preview-panel";
 import { VoicePreviewMobile } from "./voice-preview-mobile";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 const TextToSpeechDetailView = ({ generationId }: { generationId: string }) => {
   const trpc = useTRPC();
+  // Matches the `lg` breakpoint used by the layout.
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const [generationQuery, voicesQuery] = useSuspenseQueries({
     queries: [
@@ -54,16 +57,21 @@ const TextToSpeechDetailView = ({ generationId }: { generationId: string }) => {
           <div className="flex min-h-0 flex-1 flex-col">
             <TextInputPanel />
 
-            <VoicePreviewMobile
-              audioUrl={data.audioUrl}
-              voice={generatipnVoice}
-              text={data.text}
-            />
-            <VoicePreviewPanel
-              audioUrl={data.audioUrl}
-              voice={generatipnVoice}
-              text={data.text}
-            />
+            {/* Mount only one player: a hidden one would still autoplay. */}
+            {isDesktop === false && (
+              <VoicePreviewMobile
+                audioUrl={data.audioUrl}
+                voice={generatipnVoice}
+                text={data.text}
+              />
+            )}
+            {isDesktop === true && (
+              <VoicePreviewPanel
+                audioUrl={data.audioUrl}
+                voice={generatipnVoice}
+                text={data.text}
+              />
+            )}
           </div>
           <SettingsPanel />
         </div>

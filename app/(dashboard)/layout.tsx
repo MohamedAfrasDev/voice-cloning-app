@@ -6,7 +6,6 @@ import { getMemberRoles } from "@/lib/auth/membership";
 import { SidebarUser } from "@/components/layout/sidebar-user";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Toaster } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 
 // Every dashboard page needs an active workspace; new users go to onboarding.
