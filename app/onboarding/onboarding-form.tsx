@@ -131,7 +131,7 @@ export function OnboardingForm({
         className="pointer-events-none absolute inset-0 opacity-60"
         style={{
           backgroundImage:
-            "radial-gradient(60% 50% at 50% 0%, oklch(0.63 0.2 254 / 0.25), transparent 70%)",
+            "radial-gradient(60% 50% at 50% 0%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 70%)",
         }}
       />
       <div className="absolute right-4 top-4 flex items-center gap-2">

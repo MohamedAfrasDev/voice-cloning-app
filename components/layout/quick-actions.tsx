@@ -19,7 +19,7 @@ export function QuickActions() {
             <div
               className={`relative aspect-[4/3] w-2/5 shrink-0 self-start rounded-xl bg-gradient-to-br ${gradient}`}
             >
-              <div className="absolute left-1/2 top-1/2 size-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/30" />
+              <div className="absolute left-1/2 top-1/2 size-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-card/40" />
             </div>
             <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
               <div className="space-y-1">

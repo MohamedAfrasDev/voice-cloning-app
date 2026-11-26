@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import WaveSurfer from "wavesurfer.js";
+import { useTheme } from "@/hooks/use-theme";
+import { getWaveformColors } from "@/lib/waveform-colors";
 interface UseWaveSurferOption {
   url?: string;
   autoplay?: boolean;
@@ -26,6 +28,7 @@ export function useWaveSurfer({
 }: UseWaveSurferOption) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wavessurferRef = useRef<WaveSurfer | null>(null);
+  const { theme } = useTheme();
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -50,9 +53,7 @@ export function useWaveSurfer({
     const ws = WaveSurfer.create({
       container: containerRef.current,
       url,
-      waveColor: "#96999D",
-      progressColor: "#4A8A9A",
-      cursorColor: "#4A8A9A",
+      ...getWaveformColors(),
       cursorWidth: 2,
       barWidth: 2,
       barGap: 2,
@@ -88,6 +89,11 @@ export function useWaveSurfer({
       ws.destroy();
     };
   }, [url, autoplay, onReady, onError]);
+
+  // Recolor in place: recreating the player would restart the audio.
+  useEffect(() => {
+    wavessurferRef.current?.setOptions(getWaveformColors());
+  }, [theme]);
 
   const togglePlayPause = useCallback(() => {
     wavessurferRef.current?.playPause();

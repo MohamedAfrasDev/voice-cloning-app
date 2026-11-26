@@ -100,7 +100,7 @@ export function VoiceCard({ voice }: VoiceCardProps) {
           <VoiceAvatar
             seed={voice.id}
             name={voice.name}
-            className="size-14 border-[1.5px] border-white shadow-xs lg:size-18"
+            className="size-14 border-[1.5px] border-card shadow-xs lg:size-18"
           />
         </div>
       </div>
@@ -110,7 +110,7 @@ export function VoiceCard({ voice }: VoiceCardProps) {
           {voice.name}
           <span className="size-1 shrink-0 rounded-full bg-muted-foreground/50" />
 
-          <span className="text-[#327c88]">
+          <span className="text-primary">
             {VOICE_CATEGORY_LABELS[voice.category]}
           </span>
         </div>

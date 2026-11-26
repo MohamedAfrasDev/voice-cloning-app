@@ -35,7 +35,7 @@ export function TextInputPanel() {
         />
         <div className="flex items-center justify-between text-sm">
           <span className="flex items-center gap-1.5 font-medium">
-            <Coins className="size-4 text-amber-500" />
+            <Coins className="size-4 text-warning" />
             {length === 0 ? "Start typing to estimate" : "Ready to generate"}
           </span>
           <span className="text-muted-foreground">

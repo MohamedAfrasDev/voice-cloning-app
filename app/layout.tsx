@@ -3,7 +3,8 @@ import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TRPCReactProvider } from "@/trpc/client";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { Toaster } from "sonner";
+import { ThemeScript } from "@/components/theme/theme-script";
+import { ThemedToaster } from "@/components/theme/themed-toaster";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -24,14 +25,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // The theme script sets the `dark` class before React hydrates.
     <html
       lang="en"
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="min-h-full flex flex-col">
         <TRPCReactProvider>
           <NuqsAdapter>{children}</NuqsAdapter>
-          <Toaster />
+          <ThemedToaster />
         </TRPCReactProvider>
       </body>
     </html>
