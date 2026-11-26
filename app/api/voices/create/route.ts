@@ -1,15 +1,16 @@
 import { SUBSCRIPTION_REQUIRED } from "@/app/(dashboard)/features/billing/lib/error-codes";
 import { VOICE_CATEGORIES } from "@/app/(dashboard)/features/data/voice-categories";
 import { VoiceCategory } from "@/generated/prisma/enums";
-import { auth } from "@/lib/auth/server";
-import { headers } from "next/headers";
+import { getOrgAccess } from "@/lib/auth/org-access";
 import z from "zod";
-import { parseBuffer } from "music-metadata";
+import { inspectAudio } from "@/lib/audio-type";
 import { prisma } from "@/lib/db/prisma";
 import { deleteAudio, uploadAudio } from "@/lib/r2";
 import * as Sentry from "@sentry/nextjs";
-import { polar } from "@/lib/polar";
-import { errors } from "@polar-sh/sdk/2026-10";
+import { hasActiveSubscription } from "@/lib/billing";
+import { consumeRateLimit } from "@/lib/rate-limit";
+import { MAX_CUSTOM_VOICES_PER_ORG, RATE_LIMITS } from "@/lib/limits";
+import { createVoiceWithinCap } from "@/lib/voices";
 const createVoiceSchema = z.object({
   name: z.string().min(1, "Voice name is required"),
   category: z.enum(VOICE_CATEGORIES as [VoiceCategory, ...VoiceCategory[]]),
@@ -22,31 +23,17 @@ const MAX_UPLOAD_SIZE_BYTES = 20 * 1024 * 1024;
 const MIN_AUDIO_DURATION_SECONDS = 10;
 
 export async function POST(request: Request) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const access = await getOrgAccess();
 
-  const userId = session?.session.id;
+  if (access.error) return access.error;
 
-  const orgId = session?.session.activeOrganizationId;
-
-  if (!userId || !orgId) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { orgId } = access;
 
   try {
-    const customerState = await polar.customers.getStateExternal(orgId);
-
-    const hasActiveSubscription =
-      (customerState.active_subscriptions ?? []).length > 0;
-
-    if (!hasActiveSubscription) {
+    if (!(await hasActiveSubscription(orgId))) {
       return Response.json({ error: SUBSCRIPTION_REQUIRED }, { status: 403 });
     }
   } catch (err) {
-    // An org that never checked out has no Polar customer yet.
-    if (err instanceof errors.ResourceNotFound) {
-      return Response.json({ error: SUBSCRIPTION_REQUIRED }, { status: 403 });
-    }
-
     Sentry.captureException(err, {
       tags: { area: "voice-create-subscription-check" },
     });
@@ -95,34 +82,16 @@ export async function POST(request: Request) {
     );
   }
 
-  const contentType = request.headers.get("content-type");
+  const audio = await inspectAudio(new Uint8Array(fileBuffer));
 
-  if (!contentType) {
+  if (!audio) {
     return Response.json(
-      { error: "Missing Content-Type header" },
-      { status: 400 },
-    );
-  }
-
-  const normalizedContentType =
-    contentType.split(";")[0]?.trim() || "audio/wav";
-
-  let duration: number;
-
-  try {
-    const metadata = await parseBuffer(
-      new Uint8Array(fileBuffer),
-      { mimeType: normalizedContentType },
-      { duration: true },
-    );
-
-    duration = metadata.format.duration ?? 0;
-  } catch {
-    return Response.json(
-      { error: "File is not a valid audio file" },
+      { error: "File is not a supported audio file" },
       { status: 422 },
     );
   }
+
+  const { contentType, duration } = audio;
 
   if (duration < MIN_AUDIO_DURATION_SECONDS) {
     return Response.json(
@@ -133,25 +102,45 @@ export async function POST(request: Request) {
     );
   }
 
+  try {
+    if (!(await consumeRateLimit(RATE_LIMITS.voiceCreations, orgId))) {
+      return Response.json(
+        { error: "Too many new voices. Please try again later" },
+        { status: 429 },
+      );
+    }
+  } catch (err) {
+    Sentry.captureException(err, { tags: { area: "voice-create-limits" } });
+
+    return Response.json(
+      { error: "Failed to create voice. Please retry" },
+      { status: 500 },
+    );
+  }
+
   let createdVoiceId: string | null = null;
   // Set just before the upload so the rollback can remove the object even if
   // a later step (the DB update) fails.
   let uploadedObjectKey: string | null = null;
 
   try {
-    const voice = await prisma.voice.create({
-      data: {
-        name,
-        variant: "CUSTOM",
-        orgId,
-        description,
-        category,
-        language,
-      },
-      select: {
-        id: true,
-      },
+    const voice = await createVoiceWithinCap({
+      name,
+      variant: "CUSTOM",
+      orgId,
+      description,
+      category,
+      language,
     });
+
+    if (!voice) {
+      return Response.json(
+        {
+          error: `Voice limit reached (${MAX_CUSTOM_VOICES_PER_ORG}). Delete a voice to add another`,
+        },
+        { status: 403 },
+      );
+    }
 
     createdVoiceId = voice.id;
 
@@ -161,7 +150,7 @@ export async function POST(request: Request) {
     await uploadAudio({
       buffer: Buffer.from(fileBuffer),
       key: r2ObjectKey,
-      contentType: normalizedContentType,
+      contentType,
     });
 
     await prisma.voice.update({

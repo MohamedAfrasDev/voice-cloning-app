@@ -1,4 +1,6 @@
 import { auth } from "@/lib/auth/server";
+import { getMemberRoles } from "@/lib/auth/membership";
+import { isOrgAdmin } from "@/lib/auth/roles";
 import * as Sentry from "@sentry/nextjs";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { headers } from "next/headers";
@@ -55,10 +57,33 @@ export const orgProcedure = authProcedure.use(async ({ ctx, next }) => {
     });
   }
 
+  // The session keeps its active organization after the user is removed.
+  const roles = await getMemberRoles(ctx.userId, ctx.orgId);
+
+  if (!roles) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You are not a member of this organization",
+    });
+  }
+
   return next({
     ctx: {
       ...ctx,
       orgId: ctx.orgId,
+      roles,
     },
   });
+});
+
+// For actions that affect the whole organization: billing, shared data.
+export const orgAdminProcedure = orgProcedure.use(async ({ ctx, next }) => {
+  if (!isOrgAdmin(ctx.roles)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Only organization owners and admins can do this",
+    });
+  }
+
+  return next();
 });

@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/db/prisma";
-import { createTRPCRouter, orgProcedure } from "../init";
+import { createTRPCRouter, orgAdminProcedure, orgProcedure } from "../init";
+import { isOrgAdmin } from "@/lib/auth/roles";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { deleteAudio } from "@/lib/r2";
@@ -53,10 +54,15 @@ export const voiceRouter = createTRPCRouter({
         }),
       ]);
 
-      return { custom, system };
+      const canDelete = isOrgAdmin(ctx.roles);
+
+      return {
+        custom: custom.map((voice) => ({ ...voice, canDelete })),
+        system: system.map((voice) => ({ ...voice, canDelete: false })),
+      };
     }),
 
-  delete: orgProcedure
+  delete: orgAdminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const voice = await prisma.voice.findFirst({

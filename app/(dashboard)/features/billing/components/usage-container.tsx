@@ -94,6 +94,20 @@ function UsageCard({ estimatedCostCents }: { estimatedCostCents: number }) {
   );
 }
 
+function MemberCard({
+  hasActiveSubscription,
+}: {
+  hasActiveSubscription: boolean;
+}) {
+  return (
+    <p className="text-xs text-muted-foreground">
+      {hasActiveSubscription
+        ? "Subscription active."
+        : "No active subscription. Ask an owner or admin to subscribe."}
+    </p>
+  );
+}
+
 function StatusErrorCard({ onRetry }: { onRetry: () => void }) {
   return (
     <div role="alert" className="flex flex-col gap-3">
@@ -122,6 +136,12 @@ export function UsageContainer() {
   function renderContent() {
     // Cached data wins over a failed background refetch.
     if (data) {
+      if (!data.canManageBilling) {
+        return (
+          <MemberCard hasActiveSubscription={data.hasActiveSubscription} />
+        );
+      }
+
       return data.hasActiveSubscription ? (
         <UsageCard estimatedCostCents={data.estimatedCostCents} />
       ) : (

@@ -3,9 +3,13 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { organization } from "better-auth/plugins";
 import { prisma } from "@/lib/db/prisma";
+import { MAX_ORGANIZATIONS_PER_USER } from "@/lib/limits";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: { enabled: true },
-  plugins: [organization(), nextCookies()],
+  plugins: [
+    organization({ organizationLimit: MAX_ORGANIZATIONS_PER_USER }),
+    nextCookies(),
+  ],
 });

@@ -8,6 +8,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "tsx --test tests/*.test.ts",
     "sync-api": "tsx scripts/sync-api.ts",
     "retry-usage": "tsx scripts/retry-usage-events.ts"
   },

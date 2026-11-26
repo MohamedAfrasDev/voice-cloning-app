@@ -20,7 +20,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import React, { useCallback } from "react";
 import { VoiceCreateForm } from "./voice-create-form";
 import { Button } from "@/components/ui/button";
-import { useCheckout } from "../../billing/hooks/use-checkout";
+import { useSubscriptionRequiredToast } from "../../billing/hooks/use-subscription-required-toast";
 import { SUBSCRIPTION_REQUIRED } from "../../billing/lib/error-codes";
 import { toast } from "sonner";
 
@@ -37,22 +37,17 @@ const VoiceCreateDialog = ({
 }: VoiceCreateDialogProps) => {
   const isMobile = useIsMobile();
 
-  const { checkout } = useCheckout();
+  const showSubscriptionRequired = useSubscriptionRequiredToast();
 
   const handleError = useCallback(
     (message: string) => {
       if (message === SUBSCRIPTION_REQUIRED) {
-        toast.error("Subscription required", {
-          action: {
-            label: "Subscribe",
-            onClick: () => checkout(),
-          },
-        });
+        showSubscriptionRequired();
       } else {
         toast.error(message);
       }
     },
-    [checkout],
+    [showSubscriptionRequired],
   );
 
   if (isMobile) {
