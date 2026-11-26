@@ -10,6 +10,7 @@ import * as Sentry from "@sentry/nextjs";
 import { hasActiveSubscription } from "@/lib/billing";
 import { consumeRateLimit } from "@/lib/rate-limit";
 import { MAX_CUSTOM_VOICES_PER_ORG, RATE_LIMITS } from "@/lib/limits";
+import { createVoiceWithinCap } from "@/lib/voices";
 const createVoiceSchema = z.object({
   name: z.string().min(1, "Voice name is required"),
   category: z.enum(VOICE_CATEGORIES as [VoiceCategory, ...VoiceCategory[]]),
@@ -102,19 +103,6 @@ export async function POST(request: Request) {
   }
 
   try {
-    const voiceCount = await prisma.voice.count({
-      where: { variant: "CUSTOM", orgId },
-    });
-
-    if (voiceCount >= MAX_CUSTOM_VOICES_PER_ORG) {
-      return Response.json(
-        {
-          error: `Voice limit reached (${MAX_CUSTOM_VOICES_PER_ORG}). Delete a voice to add another`,
-        },
-        { status: 403 },
-      );
-    }
-
     if (!(await consumeRateLimit(RATE_LIMITS.voiceCreations, orgId))) {
       return Response.json(
         { error: "Too many new voices. Please try again later" },
@@ -136,19 +124,23 @@ export async function POST(request: Request) {
   let uploadedObjectKey: string | null = null;
 
   try {
-    const voice = await prisma.voice.create({
-      data: {
-        name,
-        variant: "CUSTOM",
-        orgId,
-        description,
-        category,
-        language,
-      },
-      select: {
-        id: true,
-      },
+    const voice = await createVoiceWithinCap({
+      name,
+      variant: "CUSTOM",
+      orgId,
+      description,
+      category,
+      language,
     });
+
+    if (!voice) {
+      return Response.json(
+        {
+          error: `Voice limit reached (${MAX_CUSTOM_VOICES_PER_ORG}). Delete a voice to add another`,
+        },
+        { status: 403 },
+      );
+    }
 
     createdVoiceId = voice.id;
 
