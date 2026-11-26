@@ -5,6 +5,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { chatterbox } from "@/lib/chatterbox-client";
 import { uploadAudio } from "@/lib/r2";
+import { polar } from "@/lib/polar";
 export const generationsRouter = createTRPCRouter({
   getById: orgProcedure
     .input(z.object({ id: z.string() }))
@@ -167,6 +168,19 @@ export const generationsRouter = createTRPCRouter({
           message: "Failed to store generated audio",
         });
       }
+
+      polar.events
+        .ingest({
+          events: [
+            {
+              name: "tts_generation",
+              external_customer_id: ctx.orgId,
+              metadata: { characters: input.text.length },
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        })
+        .catch(() => {});
 
       return {
         id: generationId,
