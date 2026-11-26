@@ -1,3 +1,4 @@
+import { SUBSCRIPTION_REQUIRED } from "@/app/(dashboard)/features/billing/lib/error-codes";
 import { VOICE_CATEGORIES } from "@/app/(dashboard)/features/data/voice-categories";
 import { VoiceCategory } from "@/generated/prisma/enums";
 import { auth } from "@/lib/auth/server";
@@ -38,18 +39,12 @@ export async function POST(request: Request) {
       (customerState.active_subscriptions ?? []).length > 0;
 
     if (!hasActiveSubscription) {
-      return Response.json(
-        { error: "An active subscription is required to create voices" },
-        { status: 403 },
-      );
+      return Response.json({ error: SUBSCRIPTION_REQUIRED }, { status: 403 });
     }
   } catch (err) {
     // An org that never checked out has no Polar customer yet.
     if (err instanceof errors.ResourceNotFound) {
-      return Response.json(
-        { error: "An active subscription is required to create voices" },
-        { status: 403 },
-      );
+      return Response.json({ error: SUBSCRIPTION_REQUIRED }, { status: 403 });
     }
 
     Sentry.captureException(err, {
