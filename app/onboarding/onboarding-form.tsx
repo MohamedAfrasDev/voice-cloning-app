@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Building2, Loader2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@ export function OnboardingForm({
   canCancel: boolean;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
@@ -43,6 +45,8 @@ export function OnboardingForm({
   const hasOrgs = organizations.length > 0;
 
   function enter() {
+    // Drop data cached for the previously active organization.
+    queryClient.resetQueries();
     router.replace("/");
     router.refresh();
   }
