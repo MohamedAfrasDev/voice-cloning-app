@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/server";
 import { getMemberRoles } from "@/lib/auth/membership";
 import { isOrgAdmin } from "@/lib/auth/roles";
+import { maskInternalError } from "@/lib/trpc-error";
 import * as Sentry from "@sentry/nextjs";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { headers } from "next/headers";
@@ -23,6 +24,7 @@ const t = initTRPC.create({
    * @see https://trpc.io/docs/server/data-transformers
    */
   transformer: superjson,
+  errorFormatter: ({ shape, error }) => maskInternalError(shape, error),
 });
 
 // Base router and procedure helpers
