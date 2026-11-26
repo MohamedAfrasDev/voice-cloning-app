@@ -13,15 +13,27 @@ const OUTPUT_PATH = path.resolve(__dirname, "../types/chatterbox-api.d.ts");
 async function main() {
   const apiUrl = process.env.CHATTERBOX_API_URL;
 
-  if (!apiUrl) {
-    console.log("ERROR: Chatterbox API URL environment required");
+  const apiKey = process.env.CHATTERBOX_API_KEY;
+
+  if (!apiUrl || !apiKey) {
+    console.log("ERROR: CHATTERBOX_API_URL and CHATTERBOX_API_KEY are required");
     process.exit(1);
   }
 
   const openApiURL = `${apiUrl}/openapi.json`;
   console.log(`Fetching OpenAPI spec from ${openApiURL}`);
 
-  const ast = await openapiTS(new URL(openApiURL));
+  const response = await fetch(openApiURL, {
+    headers: { "x-api-key": apiKey },
+    // Don't forward the key to wherever a redirect points.
+    redirect: "error",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Fetching the spec failed with status ${response.status}`);
+  }
+
+  const ast = await openapiTS(await response.text());
 
   const contents = astToString(ast);
 
@@ -35,7 +47,6 @@ async function main() {
   * This is an auto-generated file by /scripts/sync-api.ts
   * Do not edit manually. Run "npm run sync-api" to regenerate.
   * 
-  * Generated from: ${openApiURL}
   * Generated at: ${new Date().toISOString()}
  */
 
