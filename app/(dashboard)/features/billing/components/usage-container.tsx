@@ -56,7 +56,7 @@ function UsageCard({ estimatedCostCents }: { estimatedCostCents: number }) {
   const openPortal = useCallback(() => {
     portalMutation.mutate(undefined, {
       onSuccess: (data) => {
-        window.open(data.checkoutUrl, "_blank");
+        window.location.href = data.checkoutUrl;
       },
     });
   }, [portalMutation]);
