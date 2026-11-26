@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/server";
+import { getMemberRoles } from "@/lib/auth/membership";
 import { SidebarUser } from "@/components/layout/sidebar-user";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -16,7 +17,10 @@ async function RequireOrganization({
 }) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/sign-in");
-  if (!session.session.activeOrganizationId) redirect("/onboarding");
+  const orgId = session.session.activeOrganizationId;
+  if (!orgId || !(await getMemberRoles(session.user.id, orgId))) {
+    redirect("/onboarding");
+  }
   return <>{children}</>;
 }
 

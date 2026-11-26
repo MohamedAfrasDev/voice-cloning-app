@@ -175,7 +175,7 @@ export function VoiceCard({ voice }: VoiceCardProps) {
               </Link>
             </DropdownMenuItem>
 
-            {voice.variant === "CUSTOM" && (
+            {voice.canDelete && (
               <DropdownMenuItem
                 onClick={() => setShowDeleteDialog(true)}
                 className={"text-destructive focus:text-destructive"}
@@ -188,7 +188,7 @@ export function VoiceCard({ voice }: VoiceCardProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {voice.variant === "CUSTOM" && (
+        {voice.canDelete && (
           <AlertDialog
             open={showDeleteDialog}
             onOpenChange={setShowDeleteDialog}

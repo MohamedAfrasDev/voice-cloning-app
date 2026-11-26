@@ -7,6 +7,10 @@ import { chatterbox } from "@/lib/chatterbox-client";
 import { uploadAudio } from "@/lib/r2";
 import { recordUsage } from "@/lib/usage-events";
 import { after } from "next/server";
+import { hasActiveSubscription } from "@/lib/billing";
+import { consumeRateLimit } from "@/lib/rate-limit";
+import { RATE_LIMITS } from "@/lib/limits";
+import { SUBSCRIPTION_REQUIRED } from "@/app/(dashboard)/features/billing/lib/error-codes";
 export const generationsRouter = createTRPCRouter({
   getById: orgProcedure
     .input(z.object({ id: z.string() }))
@@ -54,6 +58,37 @@ export const generationsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      // First, so a flood of requests doesn't reach Polar or the database.
+      if (
+        !(await consumeRateLimit(RATE_LIMITS.generationRequests, ctx.orgId))
+      ) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Too many requests. Please wait a minute and retry",
+        });
+      }
+
+      let isSubscribed: boolean;
+
+      try {
+        isSubscribed = await hasActiveSubscription(ctx.orgId);
+      } catch (err) {
+        Sentry.captureException(err, {
+          tags: { area: "generation-subscription-check" },
+        });
+        throw new TRPCError({
+          code: "SERVICE_UNAVAILABLE",
+          message: "Could not verify your subscription. Please retry",
+        });
+      }
+
+      if (!isSubscribed) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: SUBSCRIPTION_REQUIRED,
+        });
+      }
+
       const voice = await prisma.voice.findUnique({
         where: {
           id: input.voiceId,
@@ -77,6 +112,20 @@ export const generationsRouter = createTRPCRouter({
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message: "Voice audio not available",
+        });
+      }
+
+      // Last check before GPU work, so rejected requests don't use up quota.
+      const withinDailyQuota = await consumeRateLimit(
+        RATE_LIMITS.generationCharacters,
+        ctx.orgId,
+        input.text.length,
+      );
+
+      if (!withinDailyQuota) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Daily character limit reached. Please try again later",
         });
       }
 

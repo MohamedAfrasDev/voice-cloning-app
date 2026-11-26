@@ -191,3 +191,10 @@ model PendingUsageEvent {
   occurredAt   DateTime
   createdAt    DateTime @default(now())
 }
+
+// Fixed-window counters for lib/rate-limit.ts.
+model RateLimitBucket {
+  key       String   @id
+  count     Int
+  expiresAt DateTime
+}

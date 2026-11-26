@@ -1,11 +1,12 @@
 import { errors } from "@polar-sh/sdk/2026-10";
-import { createTRPCRouter, orgProcedure } from "../init";
+import { createTRPCRouter, orgAdminProcedure, orgProcedure } from "../init";
+import { isOrgAdmin } from "@/lib/auth/roles";
 import { polar } from "@/lib/polar";
 import { env } from "@/lib/env";
 import { TRPCError } from "@trpc/server";
 
 export const billingRouter = createTRPCRouter({
-  createCheckout: orgProcedure.mutation(async ({ ctx }) => {
+  createCheckout: orgAdminProcedure.mutation(async ({ ctx }) => {
     const result = await polar.checkouts.create({
       products: [env.POLAR_PRODUCT_ID],
       external_customer_id: ctx.orgId,
@@ -21,7 +22,7 @@ export const billingRouter = createTRPCRouter({
 
     return { checkoutUrl: result.url };
   }),
-  createPortalSession: orgProcedure.mutation(async ({ ctx }) => {
+  createPortalSession: orgAdminProcedure.mutation(async ({ ctx }) => {
     const result = await polar.customerSessions.create({
       external_customer_id: ctx.orgId,
     });
@@ -37,6 +38,8 @@ export const billingRouter = createTRPCRouter({
   }),
 
   getStatus: orgProcedure.query(async ({ ctx }) => {
+    const canManageBilling = isOrgAdmin(ctx.roles);
+
     try {
       const customerState = await polar.customers.getStateExternal(ctx.orgId);
 
@@ -55,6 +58,7 @@ export const billingRouter = createTRPCRouter({
         hasActiveSubscription,
         customerId: customerState.id,
         estimatedCostCents,
+        canManageBilling,
       };
     } catch (err) {
       // An org that never checked out has no Polar customer yet.
@@ -64,6 +68,7 @@ export const billingRouter = createTRPCRouter({
         hasActiveSubscription: false,
         customerId: null,
         estimatedCostCents: 0,
+        canManageBilling,
       };
     }
   }),

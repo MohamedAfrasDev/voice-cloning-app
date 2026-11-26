@@ -9,6 +9,7 @@ import { useState } from "react";
 import { makeQueryClient } from "./query-client";
 import { AppRouter } from "./routers/_apps";
 import superjson from "superjson";
+import { MAX_TRPC_BATCH_SIZE } from "@/lib/limits";
 export const { TRPCProvider, useTRPC } = createTRPCContext<AppRouter>();
 
 let browserQueryClient: QueryClient;
@@ -50,6 +51,8 @@ export function TRPCReactProvider(
       links: [
         httpBatchLink({
           url: getUrl(),
+          // Splits larger batches instead of having the server reject them.
+          maxItems: MAX_TRPC_BATCH_SIZE,
           transformer: superjson,
         }),
       ],

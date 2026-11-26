@@ -1,27 +1,18 @@
 import * as Sentry from "@sentry/nextjs";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth/server";
+import { getOrgAccess } from "@/lib/auth/org-access";
 import { prisma } from "@/lib/db/prisma";
 import { getSignedAudioUrl } from "@/lib/r2";
+import { audioResponseHeaders } from "@/lib/audio-type";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ generationId: string }> },
 ) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const access = await getOrgAccess();
 
-  if (!session) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (access.error) return access.error;
 
-  const orgId = session.session.activeOrganizationId;
-
-  if (!orgId) {
-    return Response.json(
-      { error: "An active organization is required" },
-      { status: 403 },
-    );
-  }
+  const { orgId } = access;
 
   const { generationId } = await params;
 
@@ -48,9 +39,6 @@ export async function GET(
   }
 
   return new Response(audioResponse.body, {
-    headers: {
-      "Content-Type": "audio/wav",
-      "Cache-Control": "private, max-age=3600",
-    },
+    headers: audioResponseHeaders("audio/wav", "private, max-age=3600"),
   });
 }

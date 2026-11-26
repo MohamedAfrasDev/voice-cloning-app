@@ -11,6 +11,8 @@ import { useTRPC } from "@/trpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Sentry from "@sentry/nextjs";
 import { TRPCClientError } from "@trpc/client";
+import { useCheckout } from "../../features/billing/hooks/use-checkout";
+import { SUBSCRIPTION_REQUIRED } from "../../features/billing/lib/error-codes";
 const ttsFormSchema = z.object({
   text: z.string().min(1, "Please enter some text"),
   voiceId: z.string().min(1, "Please select a voice"),
@@ -48,6 +50,7 @@ const TextToSpeechForm = ({
   const createMutation = useMutation(
     trpc.generations.create.mutationOptions({}),
   );
+  const { checkout } = useCheckout();
   const form = useAppForm({
     ...ttsFormOptions,
     defaultValues: defaultValues ?? defaultTTSValue,
@@ -84,7 +87,13 @@ const TextToSpeechForm = ({
           Sentry.captureException(error, { tags: { area: "tts-form" } });
         }
 
-        toast.error(message);
+        if (message === SUBSCRIPTION_REQUIRED) {
+          toast.error("Subscription required", {
+            action: { label: "Subscribe", onClick: () => checkout() },
+          });
+        } else {
+          toast.error(message);
+        }
       }
     },
   });

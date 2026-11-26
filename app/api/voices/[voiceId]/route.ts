@@ -1,20 +1,17 @@
-import { auth } from "@/lib/auth/server";
+import { getOrgAccess } from "@/lib/auth/org-access";
 import { prisma } from "@/lib/db/prisma";
+import { audioResponseHeaders } from "@/lib/audio-type";
 import { getSignedAudioUrl } from "@/lib/r2";
-import { headers } from "next/headers";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ voiceId: string }> },
 ) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const access = await getOrgAccess();
 
-  const userId = session?.session.id;
-  const orgId = session?.session.activeOrganizationId;
+  if (access.error) return access.error;
 
-  if (!userId || !orgId) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+  const { orgId } = access;
 
   const { voiceId } = await params;
 
@@ -47,15 +44,12 @@ export async function GET(
     return new Response("Failed to fetch voice audio", { status: 502 });
   }
 
-  const contentType = audioResponse.headers.get("content-type") || "audio/wav";
-
   return new Response(audioResponse.body, {
-    headers: {
-      "Content-type": contentType,
-      "Cache-Control":
-        voice.variant === "SYSTEM"
-          ? "public, max-age=86400"
-          : "private, max-age=3600",
-    },
+    headers: audioResponseHeaders(
+      audioResponse.headers.get("content-type"),
+      voice.variant === "SYSTEM"
+        ? "public, max-age=86400"
+        : "private, max-age=3600",
+    ),
   });
 }
