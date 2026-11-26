@@ -11,6 +11,8 @@ export const RATE_LIMITS = {
     windowSeconds: DAY,
   },
   voiceCreations: { name: "voice-create", limit: 10, windowSeconds: HOUR },
+  // Higher than creations, so rejected files can be fixed and sent again.
+  voiceUploads: { name: "voice-upload", limit: 20, windowSeconds: HOUR },
 } as const;
 
 export const MAX_CUSTOM_VOICES_PER_ORG = 50;

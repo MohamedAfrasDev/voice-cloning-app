@@ -1,58 +1,31 @@
-import { SUBSCRIPTION_REQUIRED } from "@/app/(dashboard)/features/billing/lib/error-codes";
-import { VOICE_CATEGORIES } from "@/app/(dashboard)/features/data/voice-categories";
-import { VoiceCategory } from "@/generated/prisma/enums";
-import { getOrgAccess } from "@/lib/auth/org-access";
-import z from "zod";
+import type { z } from "zod";
+import { MAX_CUSTOM_VOICES_PER_ORG, RATE_LIMITS } from "@/lib/limits";
 import { inspectAudio } from "@/lib/audio-type";
 import { prisma } from "@/lib/db/prisma";
-import { deleteAudio, uploadAudio } from "@/lib/r2";
+import { deleteAudio, readUpload, uploadAudio } from "@/lib/r2";
 import * as Sentry from "@sentry/nextjs";
-import { hasActiveSubscription } from "@/lib/billing";
 import { consumeRateLimit } from "@/lib/rate-limit";
-import { MAX_CUSTOM_VOICES_PER_ORG, RATE_LIMITS } from "@/lib/limits";
 import { createVoiceWithinCap } from "@/lib/voices";
-const createVoiceSchema = z.object({
-  name: z.string().min(1, "Voice name is required"),
-  category: z.enum(VOICE_CATEGORIES as [VoiceCategory, ...VoiceCategory[]]),
-  language: z.string().min(1, "Language is required"),
-  description: z.string().nullish(),
-});
+import { getUploadAccess } from "@/lib/voice-upload-access";
+import {
+  createVoiceSchema,
+  MAX_UPLOAD_SIZE_BYTES,
+  MIN_AUDIO_DURATION_SECONDS,
+  pendingUploadKey,
+} from "@/lib/voice-upload";
 
-const MAX_UPLOAD_SIZE_BYTES = 20 * 1024 * 1024;
-
-const MIN_AUDIO_DURATION_SECONDS = 10;
+type CreateVoiceInput = z.infer<typeof createVoiceSchema>;
 
 export async function POST(request: Request) {
-  const access = await getOrgAccess();
+  const access = await getUploadAccess();
 
   if (access.error) return access.error;
 
   const { orgId } = access;
 
-  try {
-    if (!(await hasActiveSubscription(orgId))) {
-      return Response.json({ error: SUBSCRIPTION_REQUIRED }, { status: 403 });
-    }
-  } catch (err) {
-    Sentry.captureException(err, {
-      tags: { area: "voice-create-subscription-check" },
-    });
-
-    return Response.json(
-      { error: "Could not verify your subscription. Please retry" },
-      { status: 503 },
-    );
-  }
-
-  const url = new URL(request.url);
-
-  const validation = createVoiceSchema.safeParse({
-    name: url.searchParams.get("name"),
-    category: url.searchParams.get("category"),
-    language: url.searchParams.get("language"),
-
-    description: url.searchParams.get("description"),
-  });
+  const validation = createVoiceSchema.safeParse(
+    await request.json().catch(() => null),
+  );
 
   if (!validation.success) {
     return Response.json(
@@ -64,25 +37,53 @@ export async function POST(request: Request) {
     );
   }
 
-  const { name, category, language, description } = validation.data;
+  const pendingKey = pendingUploadKey(orgId, validation.data.uploadId);
 
-  const fileBuffer = await request.arrayBuffer();
+  try {
+    return await createFromUpload(orgId, pendingKey, validation.data);
+  } finally {
+    // Whatever the outcome, the next attempt uploads again.
+    await deleteAudio(pendingKey).catch((err) =>
+      Sentry.captureException(err, {
+        tags: { area: "voice-create-pending-cleanup" },
+      }),
+    );
+  }
+}
 
-  if (!fileBuffer.byteLength) {
+async function createFromUpload(
+  orgId: string,
+  pendingKey: string,
+  { name, category, language, description }: CreateVoiceInput,
+) {
+  let upload: Awaited<ReturnType<typeof readUpload>>;
+
+  try {
+    upload = await readUpload(pendingKey, MAX_UPLOAD_SIZE_BYTES);
+  } catch (err) {
+    Sentry.captureException(err, { tags: { area: "voice-create-read" } });
+
     return Response.json(
-      { error: "Please upload an audio file" },
-      { status: 400 },
+      { error: "Failed to create voice. Please retry" },
+      { status: 500 },
     );
   }
 
-  if (fileBuffer.byteLength > MAX_UPLOAD_SIZE_BYTES) {
-    return Response.json(
-      { error: "Audio file exceeds the 20 MB size limit" },
-      { status: 413 },
-    );
+  if (upload === "missing" || upload === "too-large") {
+    return upload === "missing"
+      ? Response.json(
+          { error: "Upload not found. Please upload the file again" },
+          { status: 400 },
+        )
+      : Response.json(
+          { error: "Audio file exceeds the 20 MB size limit" },
+          { status: 413 },
+        );
   }
 
-  const audio = await inspectAudio(new Uint8Array(fileBuffer));
+  // These exact bytes are checked and then stored, so what is served can't
+  // differ from what passed validation.
+  const audio = await inspectAudio(upload);
 
   if (!audio) {
     return Response.json(
@@ -148,7 +149,7 @@ export async function POST(request: Request) {
     uploadedObjectKey = r2ObjectKey;
 
     await uploadAudio({
-      buffer: Buffer.from(fileBuffer),
+      buffer: Buffer.from(upload),
       key: r2ObjectKey,
       contentType,
     });

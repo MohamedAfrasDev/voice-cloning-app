@@ -13,7 +13,7 @@ import { RATE_LIMITS } from "@/lib/limits";
 import { SUBSCRIPTION_REQUIRED } from "@/app/(dashboard)/features/billing/lib/error-codes";
 export const generationsRouter = createTRPCRouter({
   getById: orgProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.string().max(64) }))
     .query(async ({ input, ctx }) => {
       const generation = await prisma.generation.findUnique({
         where: { id: input.id, orgId: ctx.orgId },
@@ -50,10 +50,10 @@ export const generationsRouter = createTRPCRouter({
     .input(
       z.object({
         text: z.string().min(1).max(5000),
-        voiceId: z.string().min(1),
+        voiceId: z.string().min(1).max(64),
         temperature: z.number().min(0).max(2).default(0.8),
         topP: z.number().min(0).max(1).default(0.95),
-        topK: z.number().min(0).max(1000).default(1000),
+        topK: z.number().int().min(1).max(10000).default(1000),
         repitionPenalty: z.number().min(1).max(2).default(1.2),
       }),
     )
