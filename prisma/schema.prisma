@@ -181,3 +181,13 @@ model Generation {
   @@index([orgId])
   @@index([voiceId])
 }
+
+// Usage that Polar didn't accept yet. Deliberately not related to Generation,
+// so deleting a generation never drops usage that still has to be billed.
+model PendingUsageEvent {
+  generationId String   @id
+  orgId        String
+  characters   Int
+  occurredAt   DateTime
+  createdAt    DateTime @default(now())
+}

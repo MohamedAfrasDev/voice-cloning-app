@@ -17,9 +17,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import React from "react";
+import React, { useCallback } from "react";
 import { VoiceCreateForm } from "./voice-create-form";
 import { Button } from "@/components/ui/button";
+import { useCheckout } from "../../billing/hooks/use-checkout";
+import { SUBSCRIPTION_REQUIRED } from "../../billing/lib/error-codes";
+import { toast } from "sonner";
 
 interface VoiceCreateDialogProps {
   children?: React.ReactNode;
@@ -33,6 +36,24 @@ const VoiceCreateDialog = ({
   onOpenChange,
 }: VoiceCreateDialogProps) => {
   const isMobile = useIsMobile();
+
+  const { checkout } = useCheckout();
+
+  const handleError = useCallback(
+    (message: string) => {
+      if (message === SUBSCRIPTION_REQUIRED) {
+        toast.error("Subscription required", {
+          action: {
+            label: "Subscribe",
+            onClick: () => checkout(),
+          },
+        });
+      } else {
+        toast.error(message);
+      }
+    },
+    [checkout],
+  );
 
   if (isMobile) {
     return (
@@ -51,6 +72,7 @@ const VoiceCreateDialog = ({
           </SheetHeader>
           <VoiceCreateForm
             scrollable
+            onError={handleError}
             footer={(submit) => (
               <SheetFooter>
                 {submit}
@@ -79,6 +101,7 @@ const VoiceCreateDialog = ({
         </DialogHeader>
         <VoiceCreateForm
           scrollable
+          onError={handleError}
           footer={(submit) => (
             <SheetFooter>
               {submit}

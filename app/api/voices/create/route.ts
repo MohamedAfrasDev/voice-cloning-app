@@ -1,3 +1,4 @@
+import { SUBSCRIPTION_REQUIRED } from "@/app/(dashboard)/features/billing/lib/error-codes";
 import { VOICE_CATEGORIES } from "@/app/(dashboard)/features/data/voice-categories";
 import { VoiceCategory } from "@/generated/prisma/enums";
 import { auth } from "@/lib/auth/server";
@@ -7,6 +8,8 @@ import { parseBuffer } from "music-metadata";
 import { prisma } from "@/lib/db/prisma";
 import { deleteAudio, uploadAudio } from "@/lib/r2";
 import * as Sentry from "@sentry/nextjs";
+import { polar } from "@/lib/polar";
+import { errors } from "@polar-sh/sdk/2026-10";
 const createVoiceSchema = z.object({
   name: z.string().min(1, "Voice name is required"),
   category: z.enum(VOICE_CATEGORIES as [VoiceCategory, ...VoiceCategory[]]),
@@ -27,6 +30,31 @@ export async function POST(request: Request) {
 
   if (!userId || !orgId) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const customerState = await polar.customers.getStateExternal(orgId);
+
+    const hasActiveSubscription =
+      (customerState.active_subscriptions ?? []).length > 0;
+
+    if (!hasActiveSubscription) {
+      return Response.json({ error: SUBSCRIPTION_REQUIRED }, { status: 403 });
+    }
+  } catch (err) {
+    // An org that never checked out has no Polar customer yet.
+    if (err instanceof errors.ResourceNotFound) {
+      return Response.json({ error: SUBSCRIPTION_REQUIRED }, { status: 403 });
+    }
+
+    Sentry.captureException(err, {
+      tags: { area: "voice-create-subscription-check" },
+    });
+
+    return Response.json(
+      { error: "Could not verify your subscription. Please retry" },
+      { status: 503 },
+    );
   }
 
   const url = new URL(request.url);

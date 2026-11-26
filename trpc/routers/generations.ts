@@ -5,6 +5,8 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { chatterbox } from "@/lib/chatterbox-client";
 import { uploadAudio } from "@/lib/r2";
+import { recordUsage } from "@/lib/usage-events";
+import { after } from "next/server";
 export const generationsRouter = createTRPCRouter({
   getById: orgProcedure
     .input(z.object({ id: z.string() }))
@@ -167,6 +169,15 @@ export const generationsRouter = createTRPCRouter({
           message: "Failed to store generated audio",
         });
       }
+
+      const usage = {
+        generationId,
+        orgId: ctx.orgId,
+        characters: input.text.length,
+        occurredAt: new Date(),
+      };
+      // Runs after the response, so a slow or failing Polar doesn't delay it.
+      after(() => recordUsage(usage));
 
       return {
         id: generationId,
