@@ -10,6 +10,7 @@ import { after } from "next/server";
 import { hasActiveSubscription } from "@/lib/billing";
 import { consumeRateLimit } from "@/lib/rate-limit";
 import { RATE_LIMITS } from "@/lib/limits";
+import { siteDailyLimits } from "@/lib/site-limits";
 import { SUBSCRIPTION_REQUIRED } from "@/app/(dashboard)/features/billing/lib/error-codes";
 export const generationsRouter = createTRPCRouter({
   getById: orgProcedure
@@ -126,6 +127,25 @@ export const generationsRouter = createTRPCRouter({
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
           message: "Daily character limit reached. Please try again later",
+        });
+      }
+
+      // After the organization's own quota, so one that is over it can't use
+      // up the allowance everyone shares.
+      const siteLimits = siteDailyLimits();
+      const withinSiteCap =
+        (await consumeRateLimit(siteLimits.generations, "all")) &&
+        (await consumeRateLimit(
+          siteLimits.characters,
+          "all",
+          input.text.length,
+        ));
+
+      if (!withinSiteCap) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message:
+            "The site has reached its daily generation limit. Please try again tomorrow",
         });
       }
 
