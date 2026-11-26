@@ -2,12 +2,15 @@ const MINUTE = 60;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-/** Per-organization limits. They cap cost; tune them to real usage. */
+/**
+ * Per-organization limits. The caps for the whole site are in site-limits.ts.
+ */
 export const RATE_LIMITS = {
   generationRequests: { name: "generation", limit: 10, windowSeconds: MINUTE },
   generationCharacters: {
     name: "generation-characters",
-    limit: 100_000,
+    // Below the site-wide cap, so one organization can't use all of it.
+    limit: 20_000,
     windowSeconds: DAY,
   },
   voiceCreations: { name: "voice-create", limit: 10, windowSeconds: HOUR },
