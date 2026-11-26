@@ -200,35 +200,6 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
             <p className="text-sm text-muted-foreground">{copy.subtitle}</p>
           </div>
 
-          <div className="mb-6 grid grid-cols-2 gap-3">
-            <Button type="button" variant="outline" className="w-full">
-              <Image
-                src="https://img.icons8.com/color/96/google-logo.png"
-                alt=""
-                width={50}
-                height={50}
-                className="size-4"
-              />
-              Google
-            </Button>
-            <Button type="button" variant="outline" className="w-full">
-              <Image
-                src="https://img.icons8.com/ios-filled/50/github.png"
-                alt=""
-                width={50}
-                height={50}
-                className="size-4 dark:invert"
-              />
-              GitHub
-            </Button>
-          </div>
-
-          <div className="mb-6 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
-            <div className="h-px flex-1 bg-border" />
-            or with email
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
           <form onSubmit={onSubmit} className="space-y-4" noValidate={false}>
             {!isSignIn && (
               <div className="space-y-1.5">
@@ -317,13 +288,6 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
               {copy.switchAction}
             </button>
           </p>
-
-          {!isSignIn && (
-            <p className="mt-6 text-center text-xs text-muted-foreground">
-              By creating an account you agree to our Terms of Service and
-              Privacy Policy.
-            </p>
-          )}
         </div>
       </main>
     </div>

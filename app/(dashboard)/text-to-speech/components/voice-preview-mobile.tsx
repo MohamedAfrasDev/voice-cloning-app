@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { VoiceAvatar } from "@/components/voicer-avatar/voice-avatar";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Download, Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -22,8 +21,6 @@ export function VoicePreviewMobile({
 }) {
   const selectedVoiceName = voice?.name ?? null;
   const selectedVoiceSeed = voice?.id ?? null;
-
-  const isMobile = useIsMobile();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -51,14 +48,11 @@ export function VoicePreviewMobile({
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
       audio.removeEventListener("ended", handleEnded);
+      // A removed audio element keeps playing unless it is paused.
+      audio.pause();
+      setIsPlaying(false);
     };
   }, [audioUrl]);
-
-  useEffect(() => {
-    if (!isMobile) {
-      audioRef.current?.pause();
-    }
-  }, [isMobile]);
 
   const togglePlayPause = () => {
     const audio = audioRef.current;

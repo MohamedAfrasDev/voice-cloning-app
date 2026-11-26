@@ -41,7 +41,7 @@ type NavItem = { title: string; icon: LucideIcon } & (
 
 const NAV_ITEMS: NavItem[] = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
-  { title: "Explore Voices", href: "/voices", icon: Compass },
+  { title: "Voices", href: "/voices", icon: Compass },
   { title: "Text to Speech", href: "/text-to-speech", icon: AudioLines },
   { title: "Voice Cloning", dialog: "voice-create", icon: Mic },
 ];

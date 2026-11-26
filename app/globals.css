@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+/* Viewports too short for a dialog with a pinned header and footer. */
+@custom-variant short (@media (max-height: 30rem));
 
 @theme inline {
   --color-background: var(--background);

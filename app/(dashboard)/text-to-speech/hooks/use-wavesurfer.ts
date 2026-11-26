@@ -1,4 +1,3 @@
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useCallback, useEffect, useRef, useState } from "react";
 import WaveSurfer from "wavesurfer.js";
 interface UseWaveSurferOption {
@@ -27,7 +26,6 @@ export function useWaveSurfer({
 }: UseWaveSurferOption) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wavessurferRef = useRef<WaveSurfer | null>(null);
-  const isMobile = useIsMobile();
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -89,7 +87,7 @@ export function useWaveSurfer({
       destroyed = true;
       ws.destroy();
     };
-  }, [url, autoplay, onReady, onError, isMobile]);
+  }, [url, autoplay, onReady, onError]);
 
   const togglePlayPause = useCallback(() => {
     wavessurferRef.current?.playPause();

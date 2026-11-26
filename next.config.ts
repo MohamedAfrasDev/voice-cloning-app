@@ -31,15 +31,6 @@ const nextConfig: NextConfig = {
   experimental: {
     agentFeedback: true,
   },
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "img.icons8.com",
-        pathname: "/**",
-      },
-    ],
-  },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

@@ -57,7 +57,7 @@ const VoiceCreateDialog = ({
           <SheetTrigger render={<div>{children}</div>}></SheetTrigger>
         )}
 
-        <SheetContent side="bottom">
+        <SheetContent side="bottom" className="overflow-hidden">
           <SheetHeader>
             <SheetTitle>Create custom voices</SheetTitle>
             <SheetDescription>
@@ -87,8 +87,8 @@ const VoiceCreateDialog = ({
         <DialogTrigger render={<div>{children}</div>}></DialogTrigger>
       )}
 
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent className="flex flex-col overflow-hidden px-0 short:overflow-y-auto">
+        <DialogHeader className="px-4">
           <DialogTitle>Create custom voices</DialogTitle>
           <DialogDescription>
             Upload or record an audio sample to add a new voice to your library

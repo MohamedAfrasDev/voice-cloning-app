@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Suspense } from "react";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth/server";
-import { OrgSwitcher } from "@/app/auth/org-switcher";
-import { SignOutButton } from "@/app/auth/sign-out-button";
 import { TRPCReactProvider } from "@/trpc/client";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "sonner";
@@ -26,21 +21,6 @@ export const metadata: Metadata = {
   },
   description: "AI-Powered text-to-speech and voice cloning platform",
 };
-
-async function UserMenu() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  const user = session?.user;
-
-  if (!user) return null;
-
-  return (
-    <div className="flex items-center gap-3">
-      <OrgSwitcher />
-      <span className="text-sm text-muted-foreground">{user.email}</span>
-      <SignOutButton />
-    </div>
-  );
-}
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

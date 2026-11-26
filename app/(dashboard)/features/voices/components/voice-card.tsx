@@ -164,15 +164,16 @@ export function VoiceCard({ voice }: VoiceCardProps) {
           ></DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className={"w-full"}>
-            <DropdownMenuItem className={""}>
-              <Link
-                href={`/text-to-speech?voiceId=${voice.id}`}
-                className="flex gap-1 items-center "
-              >
-                <Mic className="size-4 text-foreground" />
+            <DropdownMenuItem
+              render={
+                <Link
+                  href={`/text-to-speech?voiceId=${encodeURIComponent(voice.id)}`}
+                />
+              }
+            >
+              <Mic className="size-4 text-foreground" />
 
-                <span className="font-medium">Use this voice</span>
-              </Link>
+              <span className="font-medium">Use this voice</span>
             </DropdownMenuItem>
 
             {voice.canDelete && (

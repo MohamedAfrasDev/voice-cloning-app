@@ -311,12 +311,12 @@ export function VoiceCreateForm({
         e.preventDefault();
         form.handleSubmit();
       }}
-      className={cn("flex flex-col", scrollable ? "min-h-0 flex-1" : "gap-6")}
+      className={cn("flex flex-col", scrollable ? "min-h-0 flex-1 gap-2 short:flex-none" : "gap-6")}
     >
       <div
         className={cn(
           scrollable
-            ? "no-scrollbar flex flex-col gap-6 overflow-y-auto px-4"
+            ? "flex min-h-0 flex-col gap-6 overflow-y-auto px-4 py-1 short:shrink-0 short:overflow-visible"
             : "flex flex-col gap-6",
         )}
       >
@@ -483,23 +483,24 @@ export function VoiceCreateForm({
             );
           }}
         </form.Field>
-
-        <form.Subscribe
-          selector={(s) => ({
-            isSubmitting: s.isSubmitting,
-          })}
-        >
-          {({ isSubmitting }) => {
-            const submitButton = (
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Voice"}
-              </Button>
-            );
-
-            return footer ? footer(submitButton) : submitButton;
-          }}
-        </form.Subscribe>
       </div>
+
+      {/* Outside the scrolling body so the submit button stays visible. */}
+      <form.Subscribe
+        selector={(s) => ({
+          isSubmitting: s.isSubmitting,
+        })}
+      >
+        {({ isSubmitting }) => {
+          const submitButton = (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create Voice"}
+            </Button>
+          );
+
+          return footer ? footer(submitButton) : submitButton;
+        }}
+      </form.Subscribe>
     </form>
   );
 }

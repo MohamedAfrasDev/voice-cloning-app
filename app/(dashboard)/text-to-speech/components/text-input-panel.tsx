@@ -1,6 +1,7 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FieldError } from "@/components/ui/field";
 import { InputGroupTextarea } from "@/components/ui/input-group";
 import { useTypedAppFormContext } from "@/hooks/use-app-form";
 import { Coins } from "lucide-react";
@@ -29,6 +30,11 @@ const TextInputPanel = () => {
             <InputGroupTextarea
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
+              aria-label="Text to convert to speech"
+              aria-invalid={field.state.meta.errors.length > 0}
+              aria-describedby={
+                field.state.meta.errors.length > 0 ? "tts-errors" : undefined
+              }
               placeholder="Start typing or paste your text here..."
               className="absolute no-scrollbar inset-0 h-full field-sizing-fixed overflow-y-auto focus-visible:ring-0 resize-none border-0 bg-transparent p-4 pb-6 lg:p-3 lg:pb-8 text-base! leading-relaxed tracking-tight shadow-none wrap-break-word"
               maxLength={5000}
@@ -41,6 +47,18 @@ const TextInputPanel = () => {
       </div>
 
       <div className="shrink-0 pt-4 lg:pt-5">
+        <form.Subscribe
+          selector={(s) => [
+            ...(s.fieldMeta.text?.errors ?? []),
+            ...(s.fieldMeta.voiceId?.errors ?? []),
+          ]}
+        >
+          {(errors) =>
+            errors.length > 0 && (
+              <FieldError id="tts-errors" errors={errors} className="mb-3" />
+            )
+          }
+        </form.Subscribe>
         <div className="flex flex-col gap-3 lg:hidden">
           <div className="flex items-center gap-2">
             <SettingsDrawer>
