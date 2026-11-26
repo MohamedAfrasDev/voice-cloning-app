@@ -1,4 +1,4 @@
-import { createPolar } from "@polar-sh/sdk/2026-10";
+import { errors } from "@polar-sh/sdk/2026-10";
 import { createTRPCRouter, orgProcedure } from "../init";
 import { polar } from "@/lib/polar";
 import { env } from "@/lib/env";
@@ -56,7 +56,10 @@ export const billingRouter = createTRPCRouter({
         customerId: customerState.id,
         estimatedCostCents,
       };
-    } catch {
+    } catch (err) {
+      // An org that never checked out has no Polar customer yet.
+      if (!(err instanceof errors.ResourceNotFound)) throw err;
+
       return {
         hasActiveSubscription: false,
         customerId: null,

@@ -94,18 +94,50 @@ function UsageCard({ estimatedCostCents }: { estimatedCostCents: number }) {
   );
 }
 
+function StatusErrorCard({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div role="alert" className="flex flex-col gap-3">
+      <p className="text-xs text-muted-foreground">
+        Couldn&apos;t load your billing status.
+      </p>
+      <Button
+        variant={"outline"}
+        className={"w-full text-xs"}
+        size="sm"
+        onClick={onRetry}
+      >
+        Retry
+      </Button>
+    </div>
+  );
+}
+
 export function UsageContainer() {
   const trpc = useTRPC();
 
-  const { data } = useQuery(trpc.billing.getStatus.queryOptions());
+  const { data, isError, refetch } = useQuery(
+    trpc.billing.getStatus.queryOptions(),
+  );
 
-  return (
-    <div className="group-data-[collapsible=icon]:hidden bg-background border border-border rounded-lg p-3">
-      {data?.hasActiveSubscription ? (
+  function renderContent() {
+    // Cached data wins over a failed background refetch.
+    if (data) {
+      return data.hasActiveSubscription ? (
         <UsageCard estimatedCostCents={data.estimatedCostCents} />
       ) : (
         <UpdgradeCard />
-      )}
+      );
+    }
+
+    if (isError) return <StatusErrorCard onRetry={() => refetch()} />;
+
+    // Don't offer checkout until the subscription status is known.
+    return <Spinner className="mx-auto size-4" />;
+  }
+
+  return (
+    <div className="group-data-[collapsible=icon]:hidden bg-background border border-border rounded-lg p-3">
+      {renderContent()}
     </div>
   );
 }
