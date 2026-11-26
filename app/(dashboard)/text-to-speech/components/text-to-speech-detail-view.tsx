@@ -17,7 +17,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 const TextToSpeechDetailView = ({ generationId }: { generationId: string }) => {
   const trpc = useTRPC();
   // Matches the `lg` breakpoint used by the layout.
-  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const isDesktop = useMediaQuery("(min-width: 64rem)");
 
   const [generationQuery, voicesQuery] = useSuspenseQueries({
     queries: [

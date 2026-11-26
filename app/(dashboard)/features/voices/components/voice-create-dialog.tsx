@@ -87,7 +87,7 @@ const VoiceCreateDialog = ({
         <DialogTrigger render={<div>{children}</div>}></DialogTrigger>
       )}
 
-      <DialogContent className="flex flex-col overflow-hidden px-0">
+      <DialogContent className="flex flex-col overflow-hidden px-0 short:overflow-y-auto">
         <DialogHeader className="px-4">
           <DialogTitle>Create custom voices</DialogTitle>
           <DialogDescription>
