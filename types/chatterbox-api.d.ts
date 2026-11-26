@@ -2,7 +2,6 @@
   * This is auto-generate file by /scripts/sync-api.ts
   * Do not edit manually run npm run sync-api to regenerate
   * 
-  * Generate from :https://mohamedafrasdev--chatterbox-tts-chatterbox-serve.us-east.modal.run/openapi.json
   * Generated at: 2026-11-11T05:45:50.943Z
  */
 
