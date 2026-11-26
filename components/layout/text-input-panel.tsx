@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { setTtsDraft } from "@/lib/tts-draft";
 const MAX_CHARS = 5000;
 
 export function TextInputPanel() {
@@ -15,7 +16,8 @@ export function TextInputPanel() {
     const trimmed = text.trim();
 
     if (!trimmed) return;
-    router.push(`/text-to-speech?text=${encodeURIComponent(trimmed)}`);
+    setTtsDraft(trimmed);
+    router.push("/text-to-speech");
   };
 
   return (

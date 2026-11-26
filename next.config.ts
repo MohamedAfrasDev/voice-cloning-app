@@ -1,9 +1,32 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs/config";
+import { securityHeaders } from "./lib/security-headers";
 
 const nextConfig: NextConfig = {
   /* config options here */
   devIndicators: false,
+  poweredByHeader: false,
+  async headers() {
+    const headers = securityHeaders({
+      isDev: process.env.NODE_ENV === "development",
+      sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    });
+
+    // The audio routes send their own, stricter Content-Security-Policy, which
+    // a policy set here would replace.
+    return [
+      {
+        source: "/((?!api/audio/|api/voices/).*)",
+        headers,
+      },
+      {
+        source: "/api/:route(audio|voices)/:path*",
+        headers: headers.filter(
+          ({ key }) => !key.startsWith("Content-Security-Policy"),
+        ),
+      },
+    ];
+  },
   experimental: {
     agentFeedback: true,
     proxyClientMaxBodySize: "20mb",

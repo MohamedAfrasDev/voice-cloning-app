@@ -2,7 +2,7 @@
 
 import { useAppForm } from "@/hooks/use-app-form";
 import { formOptions } from "@tanstack/react-form";
-import React from "react";
+import React, { useEffect } from "react";
 import z from "zod";
 import { toast } from "sonner";
 
@@ -11,6 +11,7 @@ import { useTRPC } from "@/trpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Sentry from "@sentry/nextjs";
 import { TRPCClientError } from "@trpc/client";
+import { takeTtsDraft } from "@/lib/tts-draft";
 import { useSubscriptionRequiredToast } from "../../features/billing/hooks/use-subscription-required-toast";
 import { SUBSCRIPTION_REQUIRED } from "../../features/billing/lib/error-codes";
 const ttsFormSchema = z.object({
@@ -95,6 +96,13 @@ const TextToSpeechForm = ({
       }
     },
   });
+  // An effect, not a default value: Next.js can keep this form mounted while
+  // hidden, and effects run again when the page is shown.
+  useEffect(() => {
+    const draft = takeTtsDraft();
+    if (draft) form.setFieldValue("text", draft);
+  }, [form]);
+
   return <form.AppForm>{children}</form.AppForm>;
 };
 
